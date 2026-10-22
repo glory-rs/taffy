@@ -1789,11 +1789,14 @@ fn resolve_flexible_lengths(line: &mut FlexLine, constants: &AlgoConstants) {
                 (flex_grow + item.flex_grow, flex_shrink + item.flex_shrink)
             });
 
+        // Initial free space already excludes the fixed gaps. Scaling only
+        // that remainder follows CSS Flexbox 9.7; subtracting gaps again makes
+        // fractional factors consume too little space (or shrink too far).
         let free_space = if growing && sum_flex_grow < 1.0 {
-            (initial_free_space * sum_flex_grow - total_main_axis_gap)
+            (initial_free_space * sum_flex_grow)
                 .maybe_min(constants.node_inner_size.main(constants.dir).maybe_sub(used_space))
         } else if shrinking && sum_flex_shrink < 1.0 {
-            (initial_free_space * sum_flex_shrink - total_main_axis_gap)
+            (initial_free_space * sum_flex_shrink)
                 .maybe_max(constants.node_inner_size.main(constants.dir).maybe_sub(used_space))
         } else {
             (constants.node_inner_size.main(constants.dir).maybe_sub(used_space))

@@ -131,3 +131,6 @@ pub use crate::geometry::*;
 pub use crate::style::*;
 pub use crate::tree::*;
 pub use crate::util::*;
+
+#[cfg(all(test, feature = "flexbox", feature = "taffy_tree"))]
+mod flex_gap_tests;
