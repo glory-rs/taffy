@@ -2,20 +2,20 @@
 //! per-track positions, per-line names, and resolved track list serialization.
 #[cfg(all(feature = "detailed_layout_info", feature = "grid"))]
 mod detailed_grid_info {
-    use taffy::prelude::*;
-    use taffy::style::{GridTemplateArea, GridTemplateAreas, GridTemplateComponent, GridTemplateRepetition};
-    use taffy::tree::DetailedLayoutInfo;
-    use taffy::{Direction, Point, RepetitionCount};
-    use taffy_test_helpers::new_test_tree;
+    use takia::prelude::*;
+    use takia::style::{GridTemplateArea, GridTemplateAreas, GridTemplateComponent, GridTemplateRepetition};
+    use takia::tree::DetailedLayoutInfo;
+    use takia::{Direction, Point, RepetitionCount};
+    use takia_test_helpers::new_test_tree;
 
     fn definite(width: f32, height: f32) -> Size<AvailableSpace> {
         Size { width: AvailableSpace::Definite(width), height: AvailableSpace::Definite(height) }
     }
 
     fn get_detailed_grid_info(
-        tree: &TaffyTree<taffy_test_helpers::TestNodeContext>,
+        tree: &TakiaTree<takia_test_helpers::TestNodeContext>,
         node: NodeId,
-    ) -> &taffy::DetailedGridInfo {
+    ) -> &takia::DetailedGridInfo {
         match tree.detailed_layout_info(node) {
             DetailedLayoutInfo::Grid(info) => info,
             _ => panic!("expected detailed grid info"),
@@ -246,7 +246,7 @@ mod detailed_grid_info {
             info.resolve_absolute_grid_area(
                 Line { start: line(1), end: line(3) },
                 Line { start: line(1), end: line(3) },
-                taffy::style::Direction::Ltr,
+                takia::style::Direction::Ltr,
                 Rect { left: 0.0, right: 120.0, top: 0.0, bottom: 100.0 },
             ),
             Rect { left: 5.0, right: 115.0, top: 5.0, bottom: 95.0 }
@@ -255,7 +255,7 @@ mod detailed_grid_info {
             info.resolve_absolute_grid_area(
                 Line::AUTO,
                 Line { start: GridPlacement::Auto, end: line(2) },
-                taffy::style::Direction::Ltr,
+                takia::style::Direction::Ltr,
                 Rect { left: 0.0, right: 120.0, top: 0.0, bottom: 100.0 },
             ),
             Rect { left: 0.0, right: 45.0, top: 0.0, bottom: 100.0 }
@@ -264,7 +264,7 @@ mod detailed_grid_info {
             info.resolve_absolute_grid_area(
                 Line::AUTO,
                 Line { start: line(-1), end: GridPlacement::Auto },
-                taffy::style::Direction::Ltr,
+                takia::style::Direction::Ltr,
                 Rect { left: 0.0, right: 120.0, top: 0.0, bottom: 100.0 },
             ),
             Rect { left: 115.0, right: 120.0, top: 0.0, bottom: 100.0 }
@@ -273,7 +273,7 @@ mod detailed_grid_info {
             info.resolve_absolute_grid_area(
                 Line::AUTO,
                 Line { start: GridPlacement::NamedLine("missing".into(), 1), end: line(2) },
-                taffy::style::Direction::Ltr,
+                takia::style::Direction::Ltr,
                 Rect { left: 0.0, right: 120.0, top: 0.0, bottom: 100.0 },
             ),
             // An unknown named line resolves to the first implicit line past the explicit grid,
@@ -285,7 +285,7 @@ mod detailed_grid_info {
             info.resolve_absolute_grid_area(
                 Line::AUTO,
                 Line { start: GridPlacement::Span(2), end: GridPlacement::Span(3) },
-                taffy::style::Direction::Ltr,
+                takia::style::Direction::Ltr,
                 Rect { left: 0.0, right: 120.0, top: 0.0, bottom: 100.0 },
             ),
             Rect { left: 0.0, right: 120.0, top: 0.0, bottom: 100.0 }
@@ -321,7 +321,7 @@ mod detailed_grid_info {
             info.resolve_absolute_grid_area(
                 Line::AUTO,
                 Line { start: GridPlacement::NamedLine("a".into(), 1), end: GridPlacement::NamedSpan("b".into(), 2) },
-                taffy::style::Direction::Ltr,
+                takia::style::Direction::Ltr,
                 Rect { left: 0.0, right: 90.0, top: 0.0, bottom: 50.0 },
             ),
             Rect { left: 0.0, right: 60.0, top: 0.0, bottom: 50.0 }
@@ -330,7 +330,7 @@ mod detailed_grid_info {
             info.resolve_absolute_grid_area(
                 Line::AUTO,
                 Line { start: GridPlacement::NamedLine("b".into(), 2), end: GridPlacement::NamedLine("c".into(), 1) },
-                taffy::style::Direction::Ltr,
+                takia::style::Direction::Ltr,
                 Rect { left: 0.0, right: 90.0, top: 0.0, bottom: 50.0 },
             ),
             Rect { left: 60.0, right: 90.0, top: 0.0, bottom: 50.0 }
@@ -345,7 +345,7 @@ mod detailed_grid_info {
             .new_with_children(
                 Style {
                     display: Display::Grid,
-                    direction: taffy::style::Direction::Rtl,
+                    direction: takia::style::Direction::Rtl,
                     size: Size { width: Dimension::from_length(100.0), height: Dimension::from_length(50.0) },
                     grid_template_columns: vec![length(40.0), length(60.0)],
                     grid_template_column_names: vec![vec!["a".into()], vec!["b".into()], vec!["c".into()]],
@@ -374,7 +374,7 @@ mod detailed_grid_info {
             info.resolve_absolute_grid_area(
                 Line::AUTO,
                 Line { start: line(1), end: line(2) },
-                taffy::style::Direction::Rtl,
+                takia::style::Direction::Rtl,
                 Rect { left: 0.0, right: 100.0, top: 0.0, bottom: 50.0 },
             ),
             Rect { left: 60.0, right: 100.0, top: 0.0, bottom: 50.0 }
@@ -383,7 +383,7 @@ mod detailed_grid_info {
             info.resolve_absolute_grid_area(
                 Line::AUTO,
                 Line { start: GridPlacement::NamedLine("a".into(), 1), end: GridPlacement::NamedLine("b".into(), 1) },
-                taffy::style::Direction::Rtl,
+                takia::style::Direction::Rtl,
                 Rect { left: 0.0, right: 100.0, top: 0.0, bottom: 50.0 },
             ),
             Rect { left: 60.0, right: 100.0, top: 0.0, bottom: 50.0 }
@@ -392,7 +392,7 @@ mod detailed_grid_info {
             info.resolve_absolute_grid_area(
                 Line::AUTO,
                 Line { start: line(1), end: GridPlacement::Auto },
-                taffy::style::Direction::Rtl,
+                takia::style::Direction::Rtl,
                 Rect { left: 0.0, right: 100.0, top: 0.0, bottom: 50.0 },
             ),
             Rect { left: 0.0, right: 100.0, top: 0.0, bottom: 50.0 }

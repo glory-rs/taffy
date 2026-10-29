@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod position_variants {
-    use taffy::prelude::*;
-    use taffy::{NodeId, Point, TaffyTree};
+    use takia::prelude::*;
+    use takia::{NodeId, Point, TakiaTree};
 
-    fn leaf_with_inset(position: Position, display: Display) -> (TaffyTree<()>, NodeId) {
-        let mut taffy: TaffyTree<()> = TaffyTree::new();
-        let child = taffy
+    fn leaf_with_inset(position: Position, display: Display) -> (TakiaTree<()>, NodeId) {
+        let mut takia: TakiaTree<()> = TakiaTree::new();
+        let child = takia
             .new_leaf(Style {
                 position,
                 size: Size { width: length(10.0), height: length(10.0) },
@@ -13,26 +13,26 @@ mod position_variants {
                 ..Default::default()
             })
             .unwrap();
-        let root = taffy
+        let root = takia
             .new_with_children(
                 Style { display, size: Size { width: length(100.0), height: length(100.0) }, ..Default::default() },
                 &[child],
             )
             .unwrap();
-        taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-        (taffy, child)
+        takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+        (takia, child)
     }
 
     #[test]
     fn static_and_sticky_ignore_inset() {
         for display in [Display::Block, Display::Flex, Display::Grid] {
             for position in [Position::Static, Position::Sticky] {
-                let (taffy, child) = leaf_with_inset(position, display);
-                let layout = taffy.layout(child).unwrap();
+                let (takia, child) = leaf_with_inset(position, display);
+                let layout = takia.layout(child).unwrap();
                 assert_eq!(layout.location, Point { x: 0.0, y: 0.0 }, "{position:?} in {display:?}");
             }
-            let (taffy, child) = leaf_with_inset(Position::Relative, display);
-            assert_eq!(taffy.layout(child).unwrap().location, Point { x: 5.0, y: 7.0 }, "Relative in {display:?}");
+            let (takia, child) = leaf_with_inset(Position::Relative, display);
+            assert_eq!(takia.layout(child).unwrap().location, Point { x: 5.0, y: 7.0 }, "Relative in {display:?}");
         }
     }
 

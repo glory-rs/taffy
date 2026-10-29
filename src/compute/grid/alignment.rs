@@ -112,7 +112,7 @@ pub(super) fn align_and_position_item(
     let is_replaced = style.is_replaced();
     // Fall back to the container's justify-items/align-items if unset (`None`), and then resolve
     // writing-mode-relative self-start/self-end keywords against the item's own direction.
-    // The horizontal axis is the inline axis (Taffy only supports horizontal-tb); the vertical
+    // The horizontal axis is the inline axis (Takia only supports horizontal-tb); the vertical
     // (block) axis resolves them to plain start/end.
     let item_direction = style.direction();
     let justify_self = style.justify_self().unwrap_or(container_alignment_styles.horizontal).resolve_self_relative(

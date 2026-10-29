@@ -1,4 +1,4 @@
-//! Computes the [flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/) layout algorithm on [`TaffyTree`](crate::TaffyTree) according to the [spec](https://www.w3.org/TR/css-flexbox-1/)
+//! Computes the [flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/) layout algorithm on [`TakiaTree`](crate::TakiaTree) according to the [spec](https://www.w3.org/TR/css-flexbox-1/)
 use crate::compute::common::alignment::{compute_alignment_offset, resolve_self_alignment_safety};
 use crate::geometry::{Line, Point, Rect, Size};
 use crate::style::{
@@ -6,7 +6,7 @@ use crate::style::{
     JustifyContent, LengthPercentageAuto, Overflow, Position,
 };
 use crate::style::{CoreStyle, FlexDirection, FlexboxContainerStyle, FlexboxItemStyle};
-use crate::style_helpers::{TaffyMaxContent, TaffyMinContent};
+use crate::style_helpers::{TakiaMaxContent, TakiaMinContent};
 use crate::tree::{
     AxisStaticAlign, AxisStaticEdge, AxisStaticPosition, LayoutFlexboxContainer, LayoutPartialTreeExt, NodeId,
     OofPositioningArea,

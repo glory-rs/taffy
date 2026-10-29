@@ -1,7 +1,7 @@
 mod image;
 use image::{image_measure_function, ImageContext};
 use parley::{style::StyleProperty, FontContext, Layout, LayoutContext, LineHeight};
-use taffy::prelude::*;
+use takia::prelude::*;
 
 pub const LOREM_IPSUM : &str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
@@ -26,9 +26,9 @@ impl ParleyTextContext {
 
     fn measure(
         &mut self,
-        known_dimensions: taffy::Size<Option<f32>>,
-        available_space: taffy::Size<taffy::AvailableSpace>,
-    ) -> taffy::Size<f32> {
+        known_dimensions: takia::Size<Option<f32>>,
+        available_space: takia::Size<takia::AvailableSpace>,
+    ) -> takia::Size<f32> {
         let width = known_dimensions.width.unwrap_or_else(|| {
             let widths = self.layout.calculate_content_widths();
             match available_space.width {
@@ -42,7 +42,7 @@ impl ParleyTextContext {
         self.layout.break_all_lines(Some(width));
         let height = known_dimensions.height.unwrap_or_else(|| self.layout.height());
 
-        taffy::Size { width, height }
+        takia::Size { width, height }
     }
 }
 
@@ -71,8 +71,8 @@ impl NodeContext {
 }
 
 fn measure_function(
-    known_dimensions: taffy::Size<Option<f32>>,
-    available_space: taffy::Size<taffy::AvailableSpace>,
+    known_dimensions: takia::Size<Option<f32>>,
+    available_space: takia::Size<takia::AvailableSpace>,
     node_context: Option<&mut NodeContext>,
 ) -> Size<f32> {
     if let Size { width: Some(width), height: Some(height) } = known_dimensions {
@@ -86,19 +86,19 @@ fn measure_function(
     }
 }
 
-fn main() -> Result<(), taffy::TaffyError> {
+fn main() -> Result<(), takia::TakiaError> {
     let mut font_context = FontContext::new();
     let mut layout_context = LayoutContext::new();
-    let mut taffy: TaffyTree<NodeContext> = TaffyTree::new();
+    let mut takia: TakiaTree<NodeContext> = TakiaTree::new();
 
-    let text_node = taffy.new_leaf_with_context(
+    let text_node = takia.new_leaf_with_context(
         Style::default(),
         NodeContext::text(LOREM_IPSUM, 14.0, 16.0, &mut layout_context, &mut font_context),
     )?;
 
-    let image_node = taffy.new_leaf_with_context(Style::default(), NodeContext::image(400.0, 300.0))?;
+    let image_node = takia.new_leaf_with_context(Style::default(), NodeContext::image(400.0, 300.0))?;
 
-    let root = taffy.new_with_children(
+    let root = takia.new_with_children(
         Style {
             display: Display::Flex,
             flex_direction: FlexDirection::Column,
@@ -109,15 +109,15 @@ fn main() -> Result<(), taffy::TaffyError> {
     )?;
 
     // Compute layout and print result
-    taffy.compute_layout_with_measure(root, Size::MAX_CONTENT, |inputs, _node_id, node_context, style| {
-        taffy::compute_leaf_layout(
+    takia.compute_layout_with_measure(root, Size::MAX_CONTENT, |inputs, _node_id, node_context, style| {
+        takia::compute_leaf_layout(
             inputs,
             style,
             |_, _| 0.0,
             |known_dimensions, available_space| measure_function(known_dimensions, available_space, node_context),
         )
     })?;
-    taffy.print_tree(root);
+    takia.print_tree(root);
 
     Ok(())
 }

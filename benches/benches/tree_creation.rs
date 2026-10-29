@@ -4,41 +4,41 @@ use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use std::hint::black_box;
 use std::time::Instant;
-use taffy::prelude::*;
-use taffy::style::Style;
-use taffy_benchmarks::{benchmark_group, iter_timed};
+use takia::prelude::*;
+use takia::style::Style;
+use takia_benchmarks::{benchmark_group, iter_timed};
 
 #[cfg(feature = "yoga")]
 use slotmap::SlotMap;
 #[cfg(feature = "yoga")]
-use taffy_benchmarks::yoga_helpers;
+use takia_benchmarks::yoga_helpers;
 #[cfg(feature = "yoga")]
 use yoga_helpers::yg;
 
 /// Build a random leaf node
-fn build_random_leaf(taffy: &mut TaffyTree) -> NodeId {
-    taffy.new_with_children(Style::DEFAULT, &[]).unwrap()
+fn build_random_leaf(takia: &mut TakiaTree) -> NodeId {
+    takia.new_with_children(Style::DEFAULT, &[]).unwrap()
 }
 
 /// A tree with many children that have shallow depth
-fn build_taffy_flat_hierarchy(total_node_count: u32, use_with_capacity: bool) -> (TaffyTree, NodeId) {
-    let mut taffy =
-        if use_with_capacity { TaffyTree::with_capacity(total_node_count as usize) } else { TaffyTree::new() };
+fn build_takia_flat_hierarchy(total_node_count: u32, use_with_capacity: bool) -> (TakiaTree, NodeId) {
+    let mut takia =
+        if use_with_capacity { TakiaTree::with_capacity(total_node_count as usize) } else { TakiaTree::new() };
     let mut rng = ChaCha8Rng::seed_from_u64(12345);
     let mut children = Vec::new();
     let mut node_count = 0;
 
     while node_count < total_node_count {
         let sub_children_count = rng.random_range(1..=4);
-        let sub_children: Vec<NodeId> = (0..sub_children_count).map(|_| build_random_leaf(&mut taffy)).collect();
-        let node = taffy.new_with_children(Style::DEFAULT, &sub_children).unwrap();
+        let sub_children: Vec<NodeId> = (0..sub_children_count).map(|_| build_random_leaf(&mut takia)).collect();
+        let node = takia.new_with_children(Style::DEFAULT, &sub_children).unwrap();
 
         children.push(node);
         node_count += 1 + sub_children_count;
     }
 
-    let root = taffy.new_with_children(Style::DEFAULT, children.as_slice()).unwrap();
-    (taffy, root)
+    let root = takia.new_with_children(Style::DEFAULT, children.as_slice()).unwrap();
+    (takia, root)
 }
 
 #[cfg(feature = "yoga")]
@@ -74,7 +74,7 @@ fn bench_creation<T>(b: &mut Bencher, build: impl Fn() -> T) {
     })
 }
 
-fn taffy_benchmarks(c: &mut Criterion) {
+fn takia_benchmarks(c: &mut Criterion) {
     let mut group = benchmark_group(c, "Tree creation");
     for node_count in [1_000u32, 10_000, 100_000].iter() {
         #[cfg(feature = "yoga")]
@@ -83,18 +83,18 @@ fn taffy_benchmarks(c: &mut Criterion) {
         group.bench_with_input(benchmark_id, node_count, |b, &node_count| {
             bench_creation(b, || build_yoga_flat_hierarchy(node_count))
         });
-        let benchmark_id = BenchmarkId::new("TaffyTree::new".to_string(), node_count);
+        let benchmark_id = BenchmarkId::new("TakiaTree::new".to_string(), node_count);
         group.bench_with_input(benchmark_id, node_count, |b, &node_count| {
-            bench_creation(b, || build_taffy_flat_hierarchy(node_count, false))
+            bench_creation(b, || build_takia_flat_hierarchy(node_count, false))
         });
 
-        let benchmark_id = BenchmarkId::new("TaffyTree::with_capacity".to_string(), node_count);
+        let benchmark_id = BenchmarkId::new("TakiaTree::with_capacity".to_string(), node_count);
         group.bench_with_input(benchmark_id, node_count, |b, &node_count| {
-            bench_creation(b, || build_taffy_flat_hierarchy(node_count, true))
+            bench_creation(b, || build_takia_flat_hierarchy(node_count, true))
         });
     }
     group.finish();
 }
 
-criterion_group!(name = benches; config = taffy_benchmarks::criterion_config(); targets = taffy_benchmarks);
+criterion_group!(name = benches; config = takia_benchmarks::criterion_config(); targets = takia_benchmarks);
 criterion_main!(benches);

@@ -6,9 +6,9 @@
 //! <https://www.w3.org/TR/CSS22/visudet.html#abs-replaced-height>).
 #[cfg(test)]
 mod absolute_replaced {
-    use taffy::prelude::*;
-    use taffy::{Point, TaffyTree};
-    use taffy_test_helpers::{new_test_tree, test_measure_function, TestNodeContext};
+    use takia::prelude::*;
+    use takia::{Point, TakiaTree};
+    use takia_test_helpers::{new_test_tree, test_measure_function, TestNodeContext};
 
     // A 100x50 image (height = width * 0.5)
     const IMAGE: TestNodeContext = TestNodeContext::aspect_ratio(100.0, 0.5);
@@ -27,11 +27,11 @@ mod absolute_replaced {
     }
 
     fn layout_child(child_style: Style) -> Layout {
-        let mut taffy: TaffyTree<TestNodeContext> = new_test_tree();
-        let child = taffy.new_leaf_with_context(child_style, IMAGE).unwrap();
-        let root = taffy.new_with_children(container(), &[child]).unwrap();
-        taffy.compute_layout_with_measure(root, Size::MAX_CONTENT, test_measure_function).unwrap();
-        *taffy.layout(child).unwrap()
+        let mut takia: TakiaTree<TestNodeContext> = new_test_tree();
+        let child = takia.new_leaf_with_context(child_style, IMAGE).unwrap();
+        let root = takia.new_with_children(container(), &[child]).unwrap();
+        takia.compute_layout_with_measure(root, Size::MAX_CONTENT, test_measure_function).unwrap();
+        *takia.layout(child).unwrap()
     }
 
     #[test]

@@ -1,16 +1,16 @@
 #[cfg(test)]
 mod negative_available_space {
-    use taffy::prelude::*;
-    use taffy::{AvailableSpace, LayoutInput, LayoutOutput, NodeId};
-    use taffy_test_helpers::{new_test_tree, test_measure_function, TestNodeContext};
+    use takia::prelude::*;
+    use takia::{AvailableSpace, LayoutInput, LayoutOutput, NodeId};
+    use takia_test_helpers::{new_test_tree, test_measure_function, TestNodeContext};
 
     /// Lays out a 20px wide container of the given display type with a single leaf whose
     /// horizontal margins (40px) exceed the container width. Returns the leaf's final width
     /// and every `LayoutInput` with a negative known dimension or available space that reached
     /// the leaf's measure function.
     fn layout_with_oversized_margins(display: Display, flex_direction: FlexDirection) -> (f32, Vec<String>) {
-        let mut taffy = new_test_tree();
-        let leaf = taffy
+        let mut takia = new_test_tree();
+        let leaf = takia
             .new_leaf_with_context(
                 Style {
                     margin: Rect {
@@ -25,7 +25,7 @@ mod negative_available_space {
                 TestNodeContext::zero(),
             )
             .unwrap();
-        let root = taffy
+        let root = takia
             .new_with_children(
                 Style {
                     display,
@@ -39,7 +39,7 @@ mod negative_available_space {
             .unwrap();
 
         let mut negative_inputs = Vec::new();
-        taffy
+        takia
             .compute_layout_with_measure(
                 root,
                 Size::MAX_CONTENT,
@@ -62,7 +62,7 @@ mod negative_available_space {
             )
             .unwrap();
 
-        (taffy.layout(leaf).unwrap().size.width, negative_inputs)
+        (takia.layout(leaf).unwrap().size.width, negative_inputs)
     }
 
     fn assert_floored_at_zero(display: Display, flex_direction: FlexDirection) {

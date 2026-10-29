@@ -235,7 +235,7 @@ impl AlignItems {
     /// The `Start`/`End` keywords used by the compute paths are relative to the
     /// *container's* writing mode/direction, so in the inline axis `SelfStart` resolves
     /// to `Start` when the item's direction matches the container's and to `End` when it
-    /// differs. Taffy only supports the `horizontal-tb` writing mode, so in the block
+    /// differs. Takia only supports the `horizontal-tb` writing mode, so in the block
     /// axis `SelfStart`/`SelfEnd` always resolve to `Start`/`End` respectively.
     #[inline]
     pub fn resolve_self_relative(

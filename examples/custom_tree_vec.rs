@@ -4,8 +4,8 @@ mod common {
 }
 use common::image::{image_measure_function, ImageContext};
 use common::text::{text_measure_function, FontMetrics, TextContext, WritingMode, LOREM_IPSUM};
-use taffy::util::print_tree;
-use taffy::{
+use takia::util::print_tree;
+use takia::{
     compute_cached_layout, compute_flexbox_layout, compute_grid_layout, compute_leaf_layout, compute_oof_layout,
     compute_root_layout, prelude::*, round_layout, Cache, CacheTree,
 };
@@ -122,7 +122,7 @@ impl Iterator for ChildIter<'_> {
     }
 }
 
-impl taffy::TraversePartialTree for Tree {
+impl takia::TraversePartialTree for Tree {
     type ChildIter<'a> = ChildIter<'a>;
 
     fn child_ids(&self, node_id: NodeId) -> Self::ChildIter<'_> {
@@ -138,9 +138,9 @@ impl taffy::TraversePartialTree for Tree {
     }
 }
 
-impl taffy::TraverseTree for Tree {}
+impl takia::TraverseTree for Tree {}
 
-impl taffy::LayoutPartialTree for Tree {
+impl takia::LayoutPartialTree for Tree {
     type CustomIdent = String;
 
     type CoreContainerStyle<'a>
@@ -160,7 +160,7 @@ impl taffy::LayoutPartialTree for Tree {
         0.0
     }
 
-    fn compute_child_layout(&mut self, node_id: NodeId, inputs: taffy::tree::LayoutInput) -> taffy::tree::LayoutOutput {
+    fn compute_child_layout(&mut self, node_id: NodeId, inputs: takia::tree::LayoutInput) -> takia::tree::LayoutOutput {
         compute_cached_layout(self, node_id, inputs, |tree, node_id, inputs| {
             let node = &mut tree.nodes[usize::from(node_id)];
             let font_metrics = FontMetrics { char_width: 10.0, char_height: 10.0 };
@@ -192,7 +192,7 @@ impl taffy::LayoutPartialTree for Tree {
             };
 
             // Lay out any out-of-flow (absolute/fixed) boxes for which this node is the containing block
-            if inputs.run_mode == taffy::RunMode::PerformLayout {
+            if inputs.run_mode == takia::RunMode::PerformLayout {
                 compute_oof_layout(tree, node_id, &mut output);
             }
 
@@ -201,7 +201,7 @@ impl taffy::LayoutPartialTree for Tree {
     }
 }
 
-impl taffy::LayoutContainingBlock for Tree {
+impl takia::LayoutContainingBlock for Tree {
     type OofItemStyle<'a>
         = &'a Style
     where
@@ -221,11 +221,11 @@ impl taffy::LayoutContainingBlock for Tree {
 }
 
 impl CacheTree for Tree {
-    fn cache_get(&mut self, node_id: NodeId, inputs: &taffy::LayoutInput) -> Option<taffy::LayoutOutput> {
+    fn cache_get(&mut self, node_id: NodeId, inputs: &takia::LayoutInput) -> Option<takia::LayoutOutput> {
         self.node_from_id_mut(node_id).cache.get(inputs)
     }
 
-    fn cache_store(&mut self, node_id: NodeId, inputs: &taffy::LayoutInput, layout_output: taffy::LayoutOutput) {
+    fn cache_store(&mut self, node_id: NodeId, inputs: &takia::LayoutInput, layout_output: takia::LayoutOutput) {
         self.node_from_id_mut(node_id).cache.store(inputs, layout_output)
     }
 
@@ -234,7 +234,7 @@ impl CacheTree for Tree {
     }
 }
 
-impl taffy::LayoutFlexboxContainer for Tree {
+impl takia::LayoutFlexboxContainer for Tree {
     type FlexboxContainerStyle<'a>
         = &'a Style
     where
@@ -254,7 +254,7 @@ impl taffy::LayoutFlexboxContainer for Tree {
     }
 }
 
-impl taffy::LayoutGridContainer for Tree {
+impl takia::LayoutGridContainer for Tree {
     type GridContainerStyle<'a>
         = &'a Style
     where
@@ -274,7 +274,7 @@ impl taffy::LayoutGridContainer for Tree {
     }
 }
 
-impl taffy::RoundTree for Tree {
+impl takia::RoundTree for Tree {
     fn get_unrounded_layout(&self, node_id: NodeId) -> Layout {
         self.node_from_id(node_id).unrounded_layout
     }
@@ -296,7 +296,7 @@ impl taffy::RoundTree for Tree {
     }
 }
 
-impl taffy::PrintTree for Tree {
+impl takia::PrintTree for Tree {
     fn get_debug_label(&self, node_id: NodeId) -> &'static str {
         match self.node_from_id(node_id).kind {
             NodeKind::Flexbox => "FLEX",
@@ -311,7 +311,7 @@ impl taffy::PrintTree for Tree {
     }
 }
 
-fn main() -> Result<(), taffy::TaffyError> {
+fn main() -> Result<(), takia::TakiaError> {
     let mut tree = Tree::new();
 
     let root = Node::new_column(Style::DEFAULT);

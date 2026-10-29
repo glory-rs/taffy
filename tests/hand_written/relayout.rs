@@ -1,30 +1,30 @@
-use taffy::prelude::*;
-use taffy_test_helpers::new_test_tree;
+use takia::prelude::*;
+use takia_test_helpers::new_test_tree;
 
 #[test]
 fn relayout() {
-    let mut taffy = new_test_tree();
-    let node1 = taffy
-        .new_leaf(taffy::style::Style {
-            size: taffy::geometry::Size { width: length(8.0), height: length(80.0) },
+    let mut takia = new_test_tree();
+    let node1 = takia
+        .new_leaf(takia::style::Style {
+            size: takia::geometry::Size { width: length(8.0), height: length(80.0) },
             ..Default::default()
         })
         .unwrap();
-    let node0 = taffy
+    let node0 = takia
         .new_with_children(
-            taffy::style::Style {
-                align_self: Some(taffy::prelude::AlignSelf::CENTER),
-                size: taffy::geometry::Size { width: Dimension::AUTO, height: Dimension::AUTO },
-                // size: taffy::geometry::Size { width: Dimension::Percent(1.0), height: Dimension::Percent(1.0) },
+            takia::style::Style {
+                align_self: Some(takia::prelude::AlignSelf::CENTER),
+                size: takia::geometry::Size { width: Dimension::AUTO, height: Dimension::AUTO },
+                // size: takia::geometry::Size { width: Dimension::Percent(1.0), height: Dimension::Percent(1.0) },
                 ..Default::default()
             },
             &[node1],
         )
         .unwrap();
-    let node = taffy
+    let node = takia
         .new_with_children(
-            taffy::style::Style {
-                size: taffy::geometry::Size {
+            takia::style::Style {
+                size: takia::geometry::Size {
                     width: Dimension::from_percent(1f32),
                     height: Dimension::from_percent(1f32),
                 },
@@ -33,28 +33,28 @@ fn relayout() {
             &[node0],
         )
         .unwrap();
-    taffy
+    takia
         .compute_layout(
             node,
-            taffy::geometry::Size { width: AvailableSpace::Definite(100f32), height: AvailableSpace::Definite(100f32) },
+            takia::geometry::Size { width: AvailableSpace::Definite(100f32), height: AvailableSpace::Definite(100f32) },
         )
         .unwrap();
-    let initial = taffy.layout(node).unwrap().location;
-    let initial0 = taffy.layout(node0).unwrap().location;
-    let initial1 = taffy.layout(node1).unwrap().location;
+    let initial = takia.layout(node).unwrap().location;
+    let initial0 = takia.layout(node0).unwrap().location;
+    let initial1 = takia.layout(node1).unwrap().location;
     for _ in 1..10 {
-        taffy
+        takia
             .compute_layout(
                 node,
-                taffy::geometry::Size {
+                takia::geometry::Size {
                     width: AvailableSpace::Definite(100f32),
                     height: AvailableSpace::Definite(100f32),
                 },
             )
             .unwrap();
-        assert_eq!(taffy.layout(node).unwrap().location, initial);
-        assert_eq!(taffy.layout(node0).unwrap().location, initial0);
-        assert_eq!(taffy.layout(node1).unwrap().location, initial1);
+        assert_eq!(takia.layout(node).unwrap().location, initial);
+        assert_eq!(takia.layout(node0).unwrap().location, initial0);
+        assert_eq!(takia.layout(node1).unwrap().location, initial1);
     }
 }
 
@@ -73,30 +73,30 @@ fn toggle_root_display_none() {
     };
 
     // Setup
-    let mut taffy = new_test_tree();
-    let node = taffy.new_leaf(hidden_style.clone()).unwrap();
+    let mut takia = new_test_tree();
+    let node = takia.new_leaf(hidden_style.clone()).unwrap();
 
     // Layout 1 (None)
-    taffy.compute_layout(node, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(node).unwrap();
+    takia.compute_layout(node, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(node).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 0.0);
     assert_eq!(layout.size.height, 0.0);
 
     // Layout 2 (Flex)
-    taffy.set_style(node, flex_style).unwrap();
-    taffy.compute_layout(node, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(node).unwrap();
+    takia.set_style(node, flex_style).unwrap();
+    takia.compute_layout(node, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(node).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 100.0);
     assert_eq!(layout.size.height, 100.0);
 
     // Layout 3 (None)
-    taffy.set_style(node, hidden_style).unwrap();
-    taffy.compute_layout(node, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(node).unwrap();
+    takia.set_style(node, hidden_style).unwrap();
+    takia.compute_layout(node, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(node).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 0.0);
@@ -105,37 +105,37 @@ fn toggle_root_display_none() {
 
 #[test]
 fn toggle_root_display_none_with_children() {
-    use taffy::prelude::*;
+    use takia::prelude::*;
 
-    let mut taffy = new_test_tree();
+    let mut takia = new_test_tree();
 
-    let child = taffy
+    let child = takia
         .new_leaf(Style { size: Size { width: length(800.0), height: length(100.0) }, ..Default::default() })
         .unwrap();
 
-    let parent = taffy
+    let parent = takia
         .new_with_children(
             Style { size: Size { width: length(800.0), height: length(100.0) }, ..Default::default() },
             &[child],
         )
         .unwrap();
 
-    let root = taffy.new_with_children(Style::default(), &[parent]).unwrap();
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    assert_eq!(taffy.layout(child).unwrap().size.width, 800.0);
-    assert_eq!(taffy.layout(child).unwrap().size.height, 100.0);
+    let root = takia.new_with_children(Style::default(), &[parent]).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    assert_eq!(takia.layout(child).unwrap().size.width, 800.0);
+    assert_eq!(takia.layout(child).unwrap().size.height, 100.0);
 
-    taffy.set_style(root, Style { display: Display::None, ..Default::default() }).unwrap();
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    assert_eq!(taffy.layout(child).unwrap().size.width, 0.0);
-    assert_eq!(taffy.layout(child).unwrap().size.height, 0.0);
+    takia.set_style(root, Style { display: Display::None, ..Default::default() }).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    assert_eq!(takia.layout(child).unwrap().size.width, 0.0);
+    assert_eq!(takia.layout(child).unwrap().size.height, 0.0);
 
-    taffy.set_style(root, Style::default()).unwrap();
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    assert_eq!(taffy.layout(parent).unwrap().size.width, 800.0);
-    assert_eq!(taffy.layout(parent).unwrap().size.height, 100.0);
-    assert_eq!(taffy.layout(child).unwrap().size.width, 800.0);
-    assert_eq!(taffy.layout(child).unwrap().size.height, 100.0);
+    takia.set_style(root, Style::default()).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    assert_eq!(takia.layout(parent).unwrap().size.width, 800.0);
+    assert_eq!(takia.layout(parent).unwrap().size.height, 100.0);
+    assert_eq!(takia.layout(child).unwrap().size.width, 800.0);
+    assert_eq!(takia.layout(child).unwrap().size.height, 100.0);
 }
 
 #[test]
@@ -153,31 +153,31 @@ fn toggle_flex_child_display_none() {
     };
 
     // Setup
-    let mut taffy = new_test_tree();
-    let node = taffy.new_leaf(hidden_style.clone()).unwrap();
-    let root = taffy.new_with_children(flex_style.clone(), &[node]).unwrap();
+    let mut takia = new_test_tree();
+    let node = takia.new_leaf(hidden_style.clone()).unwrap();
+    let root = takia.new_with_children(flex_style.clone(), &[node]).unwrap();
 
     // Layout 1 (None)
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(node).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(node).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 0.0);
     assert_eq!(layout.size.height, 0.0);
 
     // Layout 2 (Flex)
-    taffy.set_style(node, flex_style).unwrap();
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(node).unwrap();
+    takia.set_style(node, flex_style).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(node).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 100.0);
     assert_eq!(layout.size.height, 100.0);
 
     // Layout 3 (None)
-    taffy.set_style(node, hidden_style).unwrap();
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(node).unwrap();
+    takia.set_style(node, hidden_style).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(node).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 0.0);
@@ -199,31 +199,31 @@ fn toggle_flex_container_display_none() {
     };
 
     // Setup
-    let mut taffy = new_test_tree();
-    let node = taffy.new_leaf(hidden_style.clone()).unwrap();
-    let root = taffy.new_with_children(hidden_style.clone(), &[node]).unwrap();
+    let mut takia = new_test_tree();
+    let node = takia.new_leaf(hidden_style.clone()).unwrap();
+    let root = takia.new_with_children(hidden_style.clone(), &[node]).unwrap();
 
     // Layout 1 (None)
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(root).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(root).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 0.0);
     assert_eq!(layout.size.height, 0.0);
 
     // Layout 2 (Flex)
-    taffy.set_style(root, flex_style).unwrap();
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(root).unwrap();
+    takia.set_style(root, flex_style).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(root).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 100.0);
     assert_eq!(layout.size.height, 100.0);
 
     // Layout 3 (None)
-    taffy.set_style(root, hidden_style).unwrap();
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(root).unwrap();
+    takia.set_style(root, hidden_style).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(root).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 0.0);
@@ -245,31 +245,31 @@ fn toggle_grid_child_display_none() {
     };
 
     // Setup
-    let mut taffy = new_test_tree();
-    let node = taffy.new_leaf(hidden_style.clone()).unwrap();
-    let root = taffy.new_with_children(grid_style.clone(), &[node]).unwrap();
+    let mut takia = new_test_tree();
+    let node = takia.new_leaf(hidden_style.clone()).unwrap();
+    let root = takia.new_with_children(grid_style.clone(), &[node]).unwrap();
 
     // Layout 1 (None)
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(node).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(node).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 0.0);
     assert_eq!(layout.size.height, 0.0);
 
     // Layout 2 (Flex)
-    taffy.set_style(node, grid_style).unwrap();
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(node).unwrap();
+    takia.set_style(node, grid_style).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(node).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 100.0);
     assert_eq!(layout.size.height, 100.0);
 
     // Layout 3 (None)
-    taffy.set_style(node, hidden_style).unwrap();
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(node).unwrap();
+    takia.set_style(node, hidden_style).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(node).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 0.0);
@@ -291,31 +291,31 @@ fn toggle_grid_container_display_none() {
     };
 
     // Setup
-    let mut taffy = new_test_tree();
-    let node = taffy.new_leaf(hidden_style.clone()).unwrap();
-    let root = taffy.new_with_children(hidden_style.clone(), &[node]).unwrap();
+    let mut takia = new_test_tree();
+    let node = takia.new_leaf(hidden_style.clone()).unwrap();
+    let root = takia.new_with_children(hidden_style.clone(), &[node]).unwrap();
 
     // Layout 1 (None)
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(root).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(root).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 0.0);
     assert_eq!(layout.size.height, 0.0);
 
     // Layout 2 (Flex)
-    taffy.set_style(root, grid_style).unwrap();
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(root).unwrap();
+    takia.set_style(root, grid_style).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(root).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 100.0);
     assert_eq!(layout.size.height, 100.0);
 
     // Layout 3 (None)
-    taffy.set_style(root, hidden_style).unwrap();
-    taffy.compute_layout(root, Size::MAX_CONTENT).unwrap();
-    let layout = taffy.layout(root).unwrap();
+    takia.set_style(root, hidden_style).unwrap();
+    takia.compute_layout(root, Size::MAX_CONTENT).unwrap();
+    let layout = takia.layout(root).unwrap();
     assert_eq!(layout.location.x, 0.0);
     assert_eq!(layout.location.y, 0.0);
     assert_eq!(layout.size.width, 0.0);
@@ -324,8 +324,8 @@ fn toggle_grid_container_display_none() {
 
 #[test]
 fn relayout_is_stable_with_rounding() {
-    let mut taffy = new_test_tree();
-    taffy.enable_rounding();
+    let mut takia = new_test_tree();
+    takia.enable_rounding();
 
     // <div style="width: 1920px; height: 1080px">
     //     <div style="width: 100%; left: 1.5px">
@@ -336,8 +336,8 @@ fn relayout_is_stable_with_rounding() {
     // </div>
 
     let inner =
-        taffy.new_leaf(Style { min_size: Size { width: length(300.), height: auto() }, ..Default::default() }).unwrap();
-    let wrapper = taffy
+        takia.new_leaf(Style { min_size: Size { width: length(300.), height: auto() }, ..Default::default() }).unwrap();
+    let wrapper = takia
         .new_with_children(
             Style {
                 size: Size { width: length(150.), height: auto() },
@@ -347,7 +347,7 @@ fn relayout_is_stable_with_rounding() {
             &[inner],
         )
         .unwrap();
-    let outer = taffy
+    let outer = takia
         .new_with_children(
             Style {
                 size: Size { width: percent(1.), height: auto() },
@@ -358,7 +358,7 @@ fn relayout_is_stable_with_rounding() {
             &[wrapper],
         )
         .unwrap();
-    let root = taffy
+    let root = takia
         .new_with_children(
             Style { size: Size { width: length(1920.), height: length(1080.) }, ..Default::default() },
             &[outer],
@@ -367,28 +367,28 @@ fn relayout_is_stable_with_rounding() {
 
     // Compute and assert initial layout.
 
-    taffy.compute_layout(root, Size::MAX_CONTENT).ok();
-    taffy.print_tree(root);
+    takia.compute_layout(root, Size::MAX_CONTENT).ok();
+    takia.print_tree(root);
 
-    let initial_root_layout = taffy.layout(root).unwrap().clone();
+    let initial_root_layout = takia.layout(root).unwrap().clone();
     assert_eq!(initial_root_layout.location.x, 0.0);
     assert_eq!(initial_root_layout.location.y, 0.0);
     assert_eq!(initial_root_layout.size.width, 1920.0);
     assert_eq!(initial_root_layout.size.height, 1080.0);
 
-    let initial_outer_layout = taffy.layout(outer).unwrap().clone();
+    let initial_outer_layout = takia.layout(outer).unwrap().clone();
     assert_eq!(initial_outer_layout.location.x, 2.0);
     assert_eq!(initial_outer_layout.location.y, 0.0);
     assert_eq!(initial_outer_layout.size.width, 1920.0);
     assert_eq!(initial_outer_layout.size.height, 1080.0);
 
-    let initial_wrapper_layout = taffy.layout(wrapper).unwrap().clone();
+    let initial_wrapper_layout = takia.layout(wrapper).unwrap().clone();
     assert_eq!(initial_wrapper_layout.location.x, 0.0);
     assert_eq!(initial_wrapper_layout.location.y, 0.0);
     assert_eq!(initial_wrapper_layout.size.width, 150.0);
     assert_eq!(initial_wrapper_layout.size.height, 1080.0);
 
-    let initial_inner_layout = taffy.layout(inner).unwrap().clone();
+    let initial_inner_layout = takia.layout(inner).unwrap().clone();
     assert_eq!(initial_inner_layout.location.x, -150.0);
     assert_eq!(initial_inner_layout.location.y, 0.0);
     assert_eq!(initial_inner_layout.size.width, 300.0);
@@ -396,26 +396,26 @@ fn relayout_is_stable_with_rounding() {
 
     // Recompute and assert that new layout marks initial layout each time
     for _ in 0..5 {
-        taffy.mark_dirty(root).ok();
-        taffy.compute_layout(root, Size::MAX_CONTENT).ok();
-        taffy.print_tree(root);
+        takia.mark_dirty(root).ok();
+        takia.compute_layout(root, Size::MAX_CONTENT).ok();
+        takia.print_tree(root);
 
-        let root_layout = taffy.layout(root).unwrap();
+        let root_layout = takia.layout(root).unwrap();
         assert_eq!(initial_root_layout.location.x, root_layout.location.x);
         assert_eq!(initial_root_layout.location.y, root_layout.location.y);
         assert_eq!(initial_root_layout.size.width, root_layout.size.width);
         assert_eq!(initial_root_layout.size.height, root_layout.size.height);
-        let outer_layout = taffy.layout(outer).unwrap();
+        let outer_layout = takia.layout(outer).unwrap();
         assert_eq!(initial_outer_layout.location.x, outer_layout.location.x);
         assert_eq!(initial_outer_layout.location.y, outer_layout.location.y);
         assert_eq!(initial_outer_layout.size.width, outer_layout.size.width);
         assert_eq!(initial_outer_layout.size.height, outer_layout.size.height);
-        let wrapper_layout = taffy.layout(wrapper).unwrap();
+        let wrapper_layout = takia.layout(wrapper).unwrap();
         assert_eq!(initial_wrapper_layout.location.x, wrapper_layout.location.x);
         assert_eq!(initial_wrapper_layout.location.x, wrapper_layout.location.y);
         assert_eq!(initial_wrapper_layout.size.width, wrapper_layout.size.width);
         assert_eq!(initial_wrapper_layout.size.height, wrapper_layout.size.height);
-        let inner_layout = taffy.layout(inner).unwrap();
+        let inner_layout = takia.layout(inner).unwrap();
         assert_eq!(initial_inner_layout.location.x, inner_layout.location.x);
         assert_eq!(initial_inner_layout.location.y, inner_layout.location.y);
         assert_eq!(initial_inner_layout.size.width, inner_layout.size.width);
@@ -430,9 +430,9 @@ fn relayout_is_stable_with_rounding() {
 fn relayout_and_fresh(
     before: Style,
     after: Style,
-    build: fn(&mut TaffyTree<taffy_test_helpers::TestNodeContext>, Style) -> Vec<NodeId>,
-) -> (Vec<taffy::Layout>, Vec<taffy::Layout>) {
-    let layouts = |tree: &TaffyTree<taffy_test_helpers::TestNodeContext>, ids: &[NodeId]| {
+    build: fn(&mut TakiaTree<takia_test_helpers::TestNodeContext>, Style) -> Vec<NodeId>,
+) -> (Vec<takia::Layout>, Vec<takia::Layout>) {
+    let layouts = |tree: &TakiaTree<takia_test_helpers::TestNodeContext>, ids: &[NodeId]| {
         ids.iter().map(|&id| *tree.unrounded_layout(id)).collect::<Vec<_>>()
     };
 
@@ -562,7 +562,7 @@ fn flex_base_size_is_not_answered_by_an_inherent_size_measurement() {
 #[test]
 #[cfg(all(feature = "block_layout", feature = "flexbox"))]
 fn a_percentage_height_is_not_reused_after_its_containing_block_loses_its_height() {
-    use taffy::style::{Dimension, Display, FlexDirection};
+    use takia::style::{Dimension, Display, FlexDirection};
     // <div style="display:flex;flex-direction:column;width:78px">
     //   <div style="width:78px;height:62px">
     //     <div style="display:flex;width:31px;height:86%"> <div style="height:19px"></div>

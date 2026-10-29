@@ -1,0 +1,11 @@
+{
+  "repository": "glory-rs/takia",
+  "title": "Takia",
+  "tag_prefix": "takia-v",
+  "allowed_prefixes": [
+    "takia"
+  ],
+  "packages": [
+    "takia"
+  ]
+}

@@ -1380,7 +1380,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "taffy"
+name = "takia"
 version = "0.15.0"
 dependencies = [
  "cssparser",
@@ -1390,15 +1390,15 @@ dependencies = [
  "serde_json",
  "slotmap",
  "smallvec",
- "taffy",
- "taffy_test_helpers",
+ "takia",
+ "takia_test_helpers",
 ]
 
 [[package]]
-name = "taffy_test_helpers"
+name = "takia_test_helpers"
 version = "0.0.0"
 dependencies = [
- "taffy",
+ "takia",
 ]
 
 [[package]]

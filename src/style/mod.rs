@@ -46,7 +46,7 @@ pub use self::grid::{GridTemplateArea, GridTemplateAreas, NamedGridLine, Templat
 pub(crate) use self::grid::{NonNamedGridPlacement, OriginZeroGridPlacement};
 
 use crate::geometry::{Point, Rect, Size};
-use crate::style_helpers::TaffyAuto as _;
+use crate::style_helpers::TakiaAuto as _;
 use core::fmt::Debug;
 
 #[cfg(feature = "grid")]
@@ -370,7 +370,7 @@ pub enum Position {
     /// unless an ancestor overrides containing-block behavior (e.g. via transforms in a full CSS implementation).
     Fixed,
     /// The item is laid out in normal flow exactly like a statically positioned item: `inset` is *not* applied
-    /// as an offset (in CSS, sticky insets are scroll thresholds, which Taffy has no knowledge of; applying the
+    /// as an offset (in CSS, sticky insets are scroll thresholds, which Takia has no knowledge of; applying the
     /// sticky offset is the responsibility of the caller once it knows the scroll position).
     /// Like `Relative`, a sticky item acts as a containing block for absolutely positioned descendants.
     Sticky,
@@ -466,7 +466,7 @@ crate::util::parse::impl_parse_for_keyword_enum!(BoxSizing,
 ///   - The automatic minimum size Flexbox/CSS Grid items with non-`Visible` overflow is `0` rather than being content based
 ///   - `Overflow::Scroll` nodes have space in the layout reserved for a scrollbar (width controlled by the `scrollbar_width` property)
 ///
-/// In Taffy, we only implement the layout related secondary effects as we are not concerned with drawing/painting. The amount of space reserved for
+/// In Takia, we only implement the layout related secondary effects as we are not concerned with drawing/painting. The amount of space reserved for
 /// a scrollbar is controlled by the `scrollbar_width` property. If this is `0` then `Scroll` behaves identically to `Hidden`.
 ///
 /// <https://developer.mozilla.org/en-US/docs/Web/CSS/overflow>
@@ -522,13 +522,13 @@ crate::util::parse::impl_parse_for_keyword_enum!(Overflow,
 /// The layout-affecting parts of the CSS `contain` property.
 ///
 /// Containment limits the ways in which a box's contents can affect layout outside of the box
-/// (and vice versa). Taffy implements the layout-relevant containment types:
+/// (and vice versa). Takia implements the layout-relevant containment types:
 ///
 ///   - [`Contain::LAYOUT`]: the box establishes an independent formatting context, and is treated
 ///     as having no baseline for baseline-alignment purposes (layout containment).
 ///   - [`Contain::PAINT`]: the box establishes an independent formatting context. Paint
 ///     containment's other effects (clipping, containing absolutely-positioned descendants,
-///     stacking context) are outside of Taffy's scope.
+///     stacking context) are outside of Takia's scope.
 ///
 /// The `style` containment type has no effect on layout and is therefore not represented
 /// (it is accepted and ignored when parsing). Size and inline-size containment are not
@@ -707,7 +707,7 @@ crate::util::parse::impl_parse_for_keyword_enum!(Direction,
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(default))]
 pub struct Style<S: CheapCloneStr = DefaultCheapStr> {
-    /// This is a dummy field which is necessary to make Taffy compile with the `grid` feature disabled
+    /// This is a dummy field which is necessary to make Takia compile with the `grid` feature disabled
     /// It should always be set to `core::marker::PhantomData`.
     pub dummy: core::marker::PhantomData<S>,
     /// What layout strategy should be used?
@@ -1625,7 +1625,7 @@ mod tests {
 
     use super::Style;
     use crate::sys::DefaultCheapStr;
-    use crate::{geometry::*, style_helpers::TaffyAuto as _};
+    use crate::{geometry::*, style_helpers::TakiaAuto as _};
 
     #[test]
     fn defaults_match() {
@@ -1745,11 +1745,11 @@ mod tests {
 
         fn assert_type_size<T>(expected_size: usize) {
             let name = ::core::any::type_name::<T>();
-            let name = name.replace("taffy::geometry::", "");
-            let name = name.replace("taffy::style::dimension::", "");
-            let name = name.replace("taffy::style::alignment::", "");
-            let name = name.replace("taffy::style::flex::", "");
-            let name = name.replace("taffy::style::grid::", "");
+            let name = name.replace("takia::geometry::", "");
+            let name = name.replace("takia::style::dimension::", "");
+            let name = name.replace("takia::style::alignment::", "");
+            let name = name.replace("takia::style::flex::", "");
+            let name = name.replace("takia::style::grid::", "");
 
             assert_eq!(
                 ::core::mem::size_of::<T>(),

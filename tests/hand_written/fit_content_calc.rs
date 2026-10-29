@@ -1,9 +1,9 @@
-//! `fit-content()` with a `calc()` limit. Taffy stores the calc() as an opaque pointer which is resolved
+//! `fit-content()` with a `calc()` limit. Takia stores the calc() as an opaque pointer which is resolved
 //! through `LayoutPartialTree::resolve_calc_value`, so these tests use a minimal custom tree whose calc
 //! values are `pct * basis + px`.
 #[cfg(all(feature = "calc", feature = "grid", feature = "block_layout"))]
 mod fit_content_calc {
-    use taffy::{
+    use takia::{
         compute_block_layout, compute_cached_layout, compute_grid_layout, compute_leaf_layout, compute_root_layout,
         prelude::*, Cache, CacheTree, Layout, LayoutInput, LayoutOutput, Style,
     };
@@ -93,7 +93,7 @@ mod fit_content_calc {
         }
     }
 
-    impl taffy::TraversePartialTree for Node {
+    impl takia::TraversePartialTree for Node {
         type ChildIter<'a> = ChildIter;
         fn child_ids(&self, _node_id: NodeId) -> Self::ChildIter<'_> {
             ChildIter(0..self.children.len())
@@ -106,7 +106,7 @@ mod fit_content_calc {
         }
     }
 
-    impl taffy::LayoutPartialTree for Node {
+    impl takia::LayoutPartialTree for Node {
         type CoreContainerStyle<'a>
             = &'a Style
         where
@@ -143,7 +143,7 @@ mod fit_content_calc {
         }
     }
 
-    impl taffy::LayoutContainingBlock for Node {
+    impl takia::LayoutContainingBlock for Node {
         type OofItemStyle<'a>
             = &'a Style
         where
@@ -171,7 +171,7 @@ mod fit_content_calc {
         }
     }
 
-    impl taffy::LayoutBlockContainer for Node {
+    impl takia::LayoutBlockContainer for Node {
         type BlockContainerStyle<'a>
             = &'a Style
         where
@@ -188,7 +188,7 @@ mod fit_content_calc {
         }
     }
 
-    impl taffy::LayoutGridContainer for Node {
+    impl takia::LayoutGridContainer for Node {
         type GridContainerStyle<'a>
             = &'a Style
         where

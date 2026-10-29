@@ -4,7 +4,7 @@ use crate::style::{
     AlignContent, AlignContentKeyword, AlignItems, AlignItemsKeyword, AlignSelf, AlignmentSafety, AvailableSpace,
     CoreStyle, LengthPercentageAuto, Overflow, Position,
 };
-use crate::style_helpers::TaffyMaxContent;
+use crate::style_helpers::TakiaMaxContent;
 use crate::tree::{
     AxisStaticPosition, LayoutPartialTree, LayoutPartialTreeExt, NodeId, OofCandidate, OofCandidates,
     OofPositioningArea,
@@ -31,7 +31,7 @@ use crate::{Clear, Float, FloatDirection};
 /// The entire stack of in-flow content is treated as a single alignment subject, so the
 /// distribution keywords (`space-*`, `stretch`) invoke their single-subject fallbacks. This is
 /// used both by block layout and by inline formatting contexts (line boxes) which are laid out
-/// externally to Taffy.
+/// externally to Takia.
 pub fn compute_block_align_content_offset(align_content: AlignContent, free_space: f32) -> f32 {
     let keyword = apply_alignment_fallback(free_space, 1, align_content);
     compute_alignment_offset(free_space, 1, 0.0, keyword, false, true)
@@ -1081,7 +1081,7 @@ fn perform_final_layout_on_in_flow_children(
         container_percentage_resolution_height.maybe_sub(resolved_content_box_inset.vertical_axis_sum());
     let parent_size = Size { width: Some(container_inner_width), height: container_percentage_resolution_height };
     // Vertical available space in block flow is indefinite, NOT a min-content
-    // constraint: MaxContent is taffy's representation of "indefinite".
+    // constraint: MaxContent is takia's representation of "indefinite".
     // Passing MinContent here made every descendant grid believe it was being
     // sized under a min-content constraint, in which the maximize-tracks step
     // has zero free space — so auto rows containing only scroll-container

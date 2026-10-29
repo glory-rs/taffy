@@ -189,8 +189,8 @@ std::thread_local! {
 ///
 /// This is expected when the layout algorithm of a node's parent has changed since the node was
 /// last laid out. It must not happen while laying out a tree whose caches started out empty: that
-/// would mean that Taffy lays a node out with more than one mode in a single pass, with each
-/// change of mode throwing away the node's cache. Taffy's test suite uses this function to check
+/// would mean that Takia lays a node out with more than one mode in a single pass, with each
+/// change of mode throwing away the node's cache. Takia's test suite uses this function to check
 /// that. Only available in debug builds.
 #[doc(hidden)]
 #[cfg(all(debug_assertions, feature = "std"))]

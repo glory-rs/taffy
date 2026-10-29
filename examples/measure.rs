@@ -4,7 +4,7 @@ mod common {
 }
 use common::image::{image_measure_function, ImageContext};
 use common::text::{text_measure_function, FontMetrics, TextContext, WritingMode, LOREM_IPSUM};
-use taffy::prelude::*;
+use takia::prelude::*;
 
 enum NodeContext {
     Text(TextContext),
@@ -12,8 +12,8 @@ enum NodeContext {
 }
 
 fn measure_function(
-    known_dimensions: taffy::geometry::Size<Option<f32>>,
-    available_space: taffy::geometry::Size<taffy::style::AvailableSpace>,
+    known_dimensions: takia::geometry::Size<Option<f32>>,
+    available_space: takia::geometry::Size<takia::style::AvailableSpace>,
     node_context: Option<&mut NodeContext>,
     font_metrics: &FontMetrics,
 ) -> Size<f32> {
@@ -30,20 +30,20 @@ fn measure_function(
     }
 }
 
-fn main() -> Result<(), taffy::TaffyError> {
-    let mut taffy: TaffyTree<NodeContext> = TaffyTree::new();
+fn main() -> Result<(), takia::TakiaError> {
+    let mut takia: TakiaTree<NodeContext> = TakiaTree::new();
 
     let font_metrics = FontMetrics { char_width: 10.0, char_height: 10.0 };
 
-    let text_node = taffy.new_leaf_with_context(
+    let text_node = takia.new_leaf_with_context(
         Style::default(),
         NodeContext::Text(TextContext { text_content: LOREM_IPSUM.into(), writing_mode: WritingMode::Horizontal }),
     )?;
 
-    let image_node = taffy
+    let image_node = takia
         .new_leaf_with_context(Style::default(), NodeContext::Image(ImageContext { width: 400.0, height: 300.0 }))?;
 
-    let root = taffy.new_with_children(
+    let root = takia.new_with_children(
         Style {
             display: Display::Flex,
             flex_direction: FlexDirection::Column,
@@ -54,13 +54,13 @@ fn main() -> Result<(), taffy::TaffyError> {
     )?;
 
     // Compute layout and print result
-    taffy.compute_layout_with_measure(
+    takia.compute_layout_with_measure(
         root,
         Size::MAX_CONTENT,
         // Note: this closure is a FnMut closure and can be used to borrow external context for the duration of layout
         // For example, you may wish to borrow a global font registry and pass it into your text measuring function
         |inputs, _node_id, node_context, style| {
-            taffy::compute_leaf_layout(
+            takia::compute_leaf_layout(
                 inputs,
                 style,
                 |_, _| 0.0,
@@ -70,7 +70,7 @@ fn main() -> Result<(), taffy::TaffyError> {
             )
         },
     )?;
-    taffy.print_tree(root);
+    takia.print_tree(root);
 
     Ok(())
 }

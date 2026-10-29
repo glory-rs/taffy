@@ -2,7 +2,7 @@
 
 use crate::geometry::{Rect, Size};
 use crate::style::{Dimension, LengthPercentage, LengthPercentageAuto};
-use crate::style_helpers::TaffyZero;
+use crate::style_helpers::TakiaZero;
 use crate::CompactLength;
 
 /// Trait to encapsulate behaviour where we need to resolve from a
@@ -20,7 +20,7 @@ pub trait MaybeResolve<In, Out> {
 /// a context-independent size or dimension.
 ///
 /// Will return a default value if it unable to resolve.
-pub trait ResolveOrZero<TContext, TOutput: TaffyZero> {
+pub trait ResolveOrZero<TContext, TOutput: TakiaZero> {
     /// Resolve a dimension that might be dependent on a context, with a default fallback value
     fn resolve_or_zero(self, context: TContext, calc: impl Fn(*const (), f32) -> f32) -> TOutput;
 }
@@ -119,7 +119,7 @@ impl ResolveOrZero<Option<f32>, f32> for Dimension {
 }
 
 // Generic ResolveOrZero for Size
-impl<In, Out: TaffyZero, T: ResolveOrZero<In, Out>> ResolveOrZero<Size<In>, Size<Out>> for Size<T> {
+impl<In, Out: TakiaZero, T: ResolveOrZero<In, Out>> ResolveOrZero<Size<In>, Size<Out>> for Size<T> {
     /// Converts any `parent`-relative values for size into an absolute size
     fn resolve_or_zero(self, context: Size<In>, calc: impl Fn(*const (), f32) -> f32) -> Size<Out> {
         Size {
@@ -130,7 +130,7 @@ impl<In, Out: TaffyZero, T: ResolveOrZero<In, Out>> ResolveOrZero<Size<In>, Size
 }
 
 // Generic ResolveOrZero for resolving Rect against Size
-impl<In: Copy, Out: TaffyZero, T: ResolveOrZero<In, Out>> ResolveOrZero<Size<In>, Rect<Out>> for Rect<T> {
+impl<In: Copy, Out: TakiaZero, T: ResolveOrZero<In, Out>> ResolveOrZero<Size<In>, Rect<Out>> for Rect<T> {
     /// Converts any `parent`-relative values for Rect into an absolute Rect
     fn resolve_or_zero(self, context: Size<In>, calc: impl Fn(*const (), f32) -> f32) -> Rect<Out> {
         Rect {
@@ -143,7 +143,7 @@ impl<In: Copy, Out: TaffyZero, T: ResolveOrZero<In, Out>> ResolveOrZero<Size<In>
 }
 
 // Generic ResolveOrZero for resolving Rect against Option
-impl<Out: TaffyZero, T: ResolveOrZero<Option<f32>, Out>> ResolveOrZero<Option<f32>, Rect<Out>> for Rect<T> {
+impl<Out: TakiaZero, T: ResolveOrZero<Option<f32>, Out>> ResolveOrZero<Option<f32>, Rect<Out>> for Rect<T> {
     /// Converts any `parent`-relative values for Rect into an absolute Rect
     #[inline(always)]
     fn resolve_or_zero(self, context: Option<f32>, calc: impl Fn(*const (), f32) -> f32) -> Rect<Out> {
@@ -157,7 +157,7 @@ impl<Out: TaffyZero, T: ResolveOrZero<Option<f32>, Out>> ResolveOrZero<Option<f3
 }
 
 // Generic ResolveOrZero for resolving Rect against f32
-impl<Out: TaffyZero, T: ResolveOrZero<f32, Out>> ResolveOrZero<f32, Rect<Out>> for Rect<T> {
+impl<Out: TakiaZero, T: ResolveOrZero<f32, Out>> ResolveOrZero<f32, Rect<Out>> for Rect<T> {
     /// Converts any `parent`-relative values for Rect into an absolute Rect
     fn resolve_or_zero(self, context: f32, calc: impl Fn(*const (), f32) -> f32) -> Rect<Out> {
         Rect {
@@ -172,7 +172,7 @@ impl<Out: TaffyZero, T: ResolveOrZero<f32, Out>> ResolveOrZero<f32, Rect<Out>> f
 #[cfg(test)]
 mod tests {
     use super::{MaybeResolve, ResolveOrZero};
-    use crate::style_helpers::TaffyZero;
+    use crate::style_helpers::TakiaZero;
     use core::fmt::Debug;
 
     // MaybeResolve test runner
@@ -188,7 +188,7 @@ mod tests {
     fn roz_case<Lhs, Rhs, Out>(input: Lhs, context: Rhs, expected: Out)
     where
         Lhs: ResolveOrZero<Rhs, Out>,
-        Out: PartialEq + Debug + TaffyZero,
+        Out: PartialEq + Debug + TakiaZero,
     {
         assert_eq!(input.resolve_or_zero(context, |_, _| 42.42), expected);
     }

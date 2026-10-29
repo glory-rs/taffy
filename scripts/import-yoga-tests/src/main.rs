@@ -11,13 +11,13 @@ struct YogaFixture {
 }
 
 fn main() {
-    // Get Taffy fixtures dir
+    // Get Takia fixtures dir
     let script_root_dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-    let taffy_repo_root = script_root_dir.parent().and_then(Path::parent).unwrap();
-    let taffy_fixtures_dir = taffy_repo_root.join("test_fixtures");
+    let takia_repo_root = script_root_dir.parent().and_then(Path::parent).unwrap();
+    let takia_fixtures_dir = takia_repo_root.join("test_fixtures");
 
-    // Get Taffy fixture names
-    let taffy_fixture_names = WalkDir::new(&taffy_fixtures_dir)
+    // Get Takia fixture names
+    let takia_fixture_names = WalkDir::new(&takia_fixtures_dir)
         .into_iter()
         .filter_map(|a| a.ok())
         .map(|f| {
@@ -31,7 +31,7 @@ fn main() {
         })
         .collect::<HashSet<String>>();
 
-    // Get Taffy fixture template
+    // Get Takia fixture template
     let fixture_template_path = script_root_dir.join("FIXTURE_TEMPLATE.html");
     let fixture_template = fs::read_to_string(fixture_template_path).unwrap();
 
@@ -56,19 +56,19 @@ fn main() {
                     let name: String = snippet.chars().skip(first_quote_idx + 1).take_while(|c| *c != '"').collect();
                     let name_replace_snippet = snippet.replace(&name, "test-root");
 
-                    let taffy_name = {
+                    let takia_name = {
                         let name = name.replace("row_gap", "gap_row_gap");
                         name.replace("column_gap", "gap_column_gap")
                     };
-                    YogaFixture { file_name: file_name.clone(), name: taffy_name, content: name_replace_snippet }
+                    YogaFixture { file_name: file_name.clone(), name: takia_name, content: name_replace_snippet }
                 })
                 .collect::<Vec<_>>()
         })
         .collect();
 
     for fixture in yoga_fixtures {
-        if !taffy_fixture_names.contains(&fixture.name) {
-            let mut new_fixture_path = taffy_fixtures_dir.join(&fixture.name);
+        if !takia_fixture_names.contains(&fixture.name) {
+            let mut new_fixture_path = takia_fixtures_dir.join(&fixture.name);
             new_fixture_path.set_extension("html");
             let new_fixture_content = fixture_template.replace("__HTML_GOES_HERE__", &fixture.content);
 

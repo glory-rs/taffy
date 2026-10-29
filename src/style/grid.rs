@@ -395,7 +395,7 @@ impl GridAutoFlow {
 /// A grid line placement specification which is generic over the coordinate system that it uses to define
 /// grid line positions.
 ///
-/// `GenericGridPlacement<GridLine>` is aliased as GridPlacement and is exposed to users of Taffy to define styles.
+/// `GenericGridPlacement<GridLine>` is aliased as GridPlacement and is exposed to users of Takia to define styles.
 /// `GenericGridPlacement<OriginZeroLine>` is aliased as OriginZeroGridPlacement and is used internally for placement computations.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -439,25 +439,25 @@ pub enum GridPlacement<S: CheapCloneStr = DefaultCheapStr> {
     /// all implicit lines will be counted.
     NamedSpan(S, u16),
 }
-impl<S: CheapCloneStr> TaffyAuto for GridPlacement<S> {
+impl<S: CheapCloneStr> TakiaAuto for GridPlacement<S> {
     const AUTO: Self = Self::Auto;
 }
-impl<S: CheapCloneStr> TaffyGridLine for GridPlacement<S> {
+impl<S: CheapCloneStr> TakiaGridLine for GridPlacement<S> {
     fn from_line_index(index: i16) -> Self {
         GridPlacement::<S>::Line(GridLine::from(index))
     }
 }
-impl<S: CheapCloneStr> TaffyGridLine for Line<GridPlacement<S>> {
+impl<S: CheapCloneStr> TakiaGridLine for Line<GridPlacement<S>> {
     fn from_line_index(index: i16) -> Self {
         Line { start: GridPlacement::<S>::from_line_index(index), end: GridPlacement::<S>::Auto }
     }
 }
-impl<S: CheapCloneStr> TaffyGridSpan for GridPlacement<S> {
+impl<S: CheapCloneStr> TakiaGridSpan for GridPlacement<S> {
     fn from_span(span: u16) -> Self {
         GridPlacement::<S>::Span(span)
     }
 }
-impl<S: CheapCloneStr> TaffyGridSpan for Line<GridPlacement<S>> {
+impl<S: CheapCloneStr> TakiaGridSpan for Line<GridPlacement<S>> {
     fn from_span(span: u16) -> Self {
         Line { start: GridPlacement::<S>::from_span(span), end: GridPlacement::<S>::Auto }
     }
@@ -730,16 +730,16 @@ impl<S: CheapCloneStr> Default for Line<GridPlacement<S>> {
 #[derive(Copy, Clone, PartialEq, Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct MaxTrackSizingFunction(pub(crate) CompactLength);
-impl TaffyZero for MaxTrackSizingFunction {
+impl TakiaZero for MaxTrackSizingFunction {
     const ZERO: Self = Self(CompactLength::ZERO);
 }
-impl TaffyAuto for MaxTrackSizingFunction {
+impl TakiaAuto for MaxTrackSizingFunction {
     const AUTO: Self = Self(CompactLength::AUTO);
 }
-impl TaffyMinContent for MaxTrackSizingFunction {
+impl TakiaMinContent for MaxTrackSizingFunction {
     const MIN_CONTENT: Self = Self(CompactLength::MIN_CONTENT);
 }
-impl TaffyMaxContent for MaxTrackSizingFunction {
+impl TakiaMaxContent for MaxTrackSizingFunction {
     const MAX_CONTENT: Self = Self(CompactLength::MAX_CONTENT);
 }
 impl FromLength for MaxTrackSizingFunction {
@@ -752,7 +752,7 @@ impl FromPercent for MaxTrackSizingFunction {
         Self::percent(value.into() as f32)
     }
 }
-impl TaffyFitContent for MaxTrackSizingFunction {
+impl TakiaFitContent for MaxTrackSizingFunction {
     fn fit_content(argument: LengthPercentage) -> Self {
         Self(CompactLength::fit_content(argument))
     }
@@ -847,7 +847,7 @@ impl<'de> serde::Deserialize<'de> for MaxTrackSizingFunction {
 }
 
 impl MaxTrackSizingFunction {
-    /// An absolute length in some abstract units. Users of Taffy may define what they correspond
+    /// An absolute length in some abstract units. Users of Takia may define what they correspond
     /// to in their application (pixels, logical pixels, mm, etc) as they see fit.
     #[inline(always)]
     pub const fn length(val: f32) -> Self {
@@ -1179,16 +1179,16 @@ impl From<ExpandedMaxTrackSizingFunction> for MaxTrackSizingFunction {
 #[derive(Copy, Clone, PartialEq, Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct MinTrackSizingFunction(pub(crate) CompactLength);
-impl TaffyZero for MinTrackSizingFunction {
+impl TakiaZero for MinTrackSizingFunction {
     const ZERO: Self = Self(CompactLength::ZERO);
 }
-impl TaffyAuto for MinTrackSizingFunction {
+impl TakiaAuto for MinTrackSizingFunction {
     const AUTO: Self = Self(CompactLength::AUTO);
 }
-impl TaffyMinContent for MinTrackSizingFunction {
+impl TakiaMinContent for MinTrackSizingFunction {
     const MIN_CONTENT: Self = Self(CompactLength::MIN_CONTENT);
 }
-impl TaffyMaxContent for MinTrackSizingFunction {
+impl TakiaMaxContent for MinTrackSizingFunction {
     const MAX_CONTENT: Self = Self(CompactLength::MAX_CONTENT);
 }
 impl FromLength for MinTrackSizingFunction {
@@ -1283,7 +1283,7 @@ impl<'de> serde::Deserialize<'de> for MinTrackSizingFunction {
 }
 
 impl MinTrackSizingFunction {
-    /// An absolute length in some abstract units. Users of Taffy may define what they correspond
+    /// An absolute length in some abstract units. Users of Takia may define what they correspond
     /// to in their application (pixels, logical pixels, mm, etc) as they see fit.
     #[inline(always)]
     pub const fn length(val: f32) -> Self {
@@ -1499,23 +1499,23 @@ impl TrackSizingFunction {
         self.min.0.is_length_or_percentage() || self.max.0.is_length_or_percentage()
     }
 }
-impl TaffyAuto for TrackSizingFunction {
+impl TakiaAuto for TrackSizingFunction {
     const AUTO: Self = Self { min: MinTrackSizingFunction::AUTO, max: MaxTrackSizingFunction::AUTO };
 }
-impl TaffyMinContent for TrackSizingFunction {
+impl TakiaMinContent for TrackSizingFunction {
     const MIN_CONTENT: Self =
         Self { min: MinTrackSizingFunction::MIN_CONTENT, max: MaxTrackSizingFunction::MIN_CONTENT };
 }
-impl TaffyMaxContent for TrackSizingFunction {
+impl TakiaMaxContent for TrackSizingFunction {
     const MAX_CONTENT: Self =
         Self { min: MinTrackSizingFunction::MAX_CONTENT, max: MaxTrackSizingFunction::MAX_CONTENT };
 }
-impl TaffyFitContent for TrackSizingFunction {
+impl TakiaFitContent for TrackSizingFunction {
     fn fit_content(argument: LengthPercentage) -> Self {
         Self { min: MinTrackSizingFunction::AUTO, max: MaxTrackSizingFunction::fit_content(argument) }
     }
 }
-impl TaffyZero for TrackSizingFunction {
+impl TakiaZero for TrackSizingFunction {
     const ZERO: Self = Self { min: MinTrackSizingFunction::ZERO, max: MaxTrackSizingFunction::ZERO };
 }
 impl FromLength for TrackSizingFunction {
@@ -1708,21 +1708,21 @@ impl<S: CheapCloneStr> GridTemplateComponent<S> {
         )
     }
 }
-impl<S: CheapCloneStr> TaffyAuto for GridTemplateComponent<S> {
+impl<S: CheapCloneStr> TakiaAuto for GridTemplateComponent<S> {
     const AUTO: Self = Self::Single(TrackSizingFunction::AUTO);
 }
-impl<S: CheapCloneStr> TaffyMinContent for GridTemplateComponent<S> {
+impl<S: CheapCloneStr> TakiaMinContent for GridTemplateComponent<S> {
     const MIN_CONTENT: Self = Self::Single(TrackSizingFunction::MIN_CONTENT);
 }
-impl<S: CheapCloneStr> TaffyMaxContent for GridTemplateComponent<S> {
+impl<S: CheapCloneStr> TakiaMaxContent for GridTemplateComponent<S> {
     const MAX_CONTENT: Self = Self::Single(TrackSizingFunction::MAX_CONTENT);
 }
-impl<S: CheapCloneStr> TaffyFitContent for GridTemplateComponent<S> {
+impl<S: CheapCloneStr> TakiaFitContent for GridTemplateComponent<S> {
     fn fit_content(argument: LengthPercentage) -> Self {
         Self::Single(TrackSizingFunction::fit_content(argument))
     }
 }
-impl<S: CheapCloneStr> TaffyZero for GridTemplateComponent<S> {
+impl<S: CheapCloneStr> TakiaZero for GridTemplateComponent<S> {
     const ZERO: Self = Self::Single(TrackSizingFunction::ZERO);
 }
 impl<S: CheapCloneStr> FromLength for GridTemplateComponent<S> {

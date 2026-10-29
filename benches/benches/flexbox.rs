@@ -1,18 +1,18 @@
 //! This file includes benchmarks for very large, pseudo-randomly generated trees
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use rand::Rng;
-use taffy::prelude::*;
-use taffy::style::Dimension;
-use taffy::style::Style as TaffyStyle;
+use takia::prelude::*;
+use takia::style::Dimension;
+use takia::style::Style as TakiaStyle;
 
-use taffy_benchmarks::{
-    bench_layout, benchmark_group, BuildTree, BuildTreeExt, FixedStyleGenerator, GenStyle, TaffyTreeBuilder,
+use takia_benchmarks::{
+    bench_layout, benchmark_group, BuildTree, BuildTreeExt, FixedStyleGenerator, GenStyle, TakiaTreeBuilder,
 };
 
-#[cfg(feature = "taffy03")]
-use taffy_benchmarks::taffy_03_helpers::Taffy03TreeBuilder;
+#[cfg(feature = "takia03")]
+use takia_benchmarks::takia_03_helpers::Takia03TreeBuilder;
 #[cfg(feature = "yoga")]
-use taffy_benchmarks::yoga_helpers::YogaTreeBuilder;
+use takia_benchmarks::yoga_helpers::YogaTreeBuilder;
 
 fn random_dimension(rng: &mut impl Rng) -> Dimension {
     match rng.random_range(0.0..=1.0) {
@@ -24,12 +24,12 @@ fn random_dimension(rng: &mut impl Rng) -> Dimension {
 
 #[derive(Clone)]
 pub struct RandomStyleGenerator;
-impl GenStyle<TaffyStyle> for RandomStyleGenerator {
-    fn create_leaf_style(&mut self, rng: &mut impl Rng) -> TaffyStyle {
-        TaffyStyle { size: Size { width: random_dimension(rng), height: random_dimension(rng) }, ..Default::default() }
+impl GenStyle<TakiaStyle> for RandomStyleGenerator {
+    fn create_leaf_style(&mut self, rng: &mut impl Rng) -> TakiaStyle {
+        TakiaStyle { size: Size { width: random_dimension(rng), height: random_dimension(rng) }, ..Default::default() }
     }
-    fn create_container_style(&mut self, rng: &mut impl Rng) -> TaffyStyle {
-        TaffyStyle { size: Size { width: random_dimension(rng), height: random_dimension(rng) }, ..Default::default() }
+    fn create_container_style(&mut self, rng: &mut impl Rng) -> TakiaStyle {
+        TakiaStyle { size: Size { width: random_dimension(rng), height: random_dimension(rng) }, ..Default::default() }
     }
 }
 
@@ -45,9 +45,9 @@ fn random_inset(rng: &mut impl Rng) -> LengthPercentageAuto {
 /// so that the out-of-flow positioning pass does the bulk of the work.
 #[derive(Clone)]
 pub struct RandomAbsoluteStyleGenerator;
-impl GenStyle<TaffyStyle> for RandomAbsoluteStyleGenerator {
-    fn create_leaf_style(&mut self, rng: &mut impl Rng) -> TaffyStyle {
-        TaffyStyle {
+impl GenStyle<TakiaStyle> for RandomAbsoluteStyleGenerator {
+    fn create_leaf_style(&mut self, rng: &mut impl Rng) -> TakiaStyle {
+        TakiaStyle {
             position: Position::Absolute,
             inset: Rect {
                 left: random_inset(rng),
@@ -59,8 +59,8 @@ impl GenStyle<TaffyStyle> for RandomAbsoluteStyleGenerator {
             ..Default::default()
         }
     }
-    fn create_container_style(&mut self, rng: &mut impl Rng) -> TaffyStyle {
-        TaffyStyle {
+    fn create_container_style(&mut self, rng: &mut impl Rng) -> TakiaStyle {
+        TakiaStyle {
             position: Position::Relative,
             size: Size { width: random_dimension(rng), height: random_dimension(rng) },
             ..Default::default()
@@ -92,10 +92,10 @@ macro_rules! benchmark_each_library {
     ($benchmark_name: expr, $group: ident, $builder: ident, $params: expr, $generate_style: expr, $generate_tree: expr) => {
         #[cfg(feature = "yoga")]
         run_benchmark!(YogaTreeBuilder<_, _>, "Yoga", $benchmark_name, $group, $builder, $params, $generate_style, $generate_tree);
-        #[cfg(feature = "taffy03")]
-        run_benchmark!(Taffy03TreeBuilder<_, _>, "Taffy 0.3", $benchmark_name, $group, $builder, $params, $generate_style, $generate_tree);
+        #[cfg(feature = "takia03")]
+        run_benchmark!(Takia03TreeBuilder<_, _>, "Takia 0.3", $benchmark_name, $group, $builder, $params, $generate_style, $generate_tree);
 
-        run_benchmark!(TaffyTreeBuilder<_, _>, "Taffy main", $benchmark_name, $group, $builder, $params, $generate_style, $generate_tree);
+        run_benchmark!(TakiaTreeBuilder<_, _>, "Takia main", $benchmark_name, $group, $builder, $params, $generate_style, $generate_tree);
     };
 }
 
@@ -224,13 +224,13 @@ fn super_deep_benchmarks(c: &mut Criterion) {
 
     #[derive(Clone)]
     struct SuperDeepStyleGen;
-    impl GenStyle<TaffyStyle> for SuperDeepStyleGen {
-        fn create_leaf_style(&mut self, _rng: &mut impl Rng) -> TaffyStyle {
+    impl GenStyle<TakiaStyle> for SuperDeepStyleGen {
+        fn create_leaf_style(&mut self, _rng: &mut impl Rng) -> TakiaStyle {
             // let flex_direction = if rng.gen::<f32>() < 0.5 { FlexDirection::Column } else { FlexDirection::Row };
             let flex_direction = FlexDirection::Row;
             Style { flex_direction, flex_grow: 1.0, margin: length(10.0), ..Default::default() }
         }
-        fn create_container_style(&mut self, rng: &mut impl Rng) -> TaffyStyle {
+        fn create_container_style(&mut self, rng: &mut impl Rng) -> TakiaStyle {
             self.create_leaf_style(rng)
         }
     }
@@ -250,10 +250,10 @@ fn super_deep_benchmarks(c: &mut Criterion) {
             || SuperDeepStyleGen,
             builder.build_super_deep_hierarchy(*depth, 3)
         );
-        #[cfg(feature = "taffy03")]
+        #[cfg(feature = "takia03")]
         run_benchmark!(
-            Taffy03TreeBuilder<_,_>,
-            "Taffy 0.3",
+            Takia03TreeBuilder<_,_>,
+            "Takia 0.3",
             "",
             group,
             builder,
@@ -263,8 +263,8 @@ fn super_deep_benchmarks(c: &mut Criterion) {
         );
 
         run_benchmark!(
-            TaffyTreeBuilder<_,_>,
-            "Taffy main",
+            TakiaTreeBuilder<_,_>,
+            "Takia main",
             "",
             group,
             builder,
@@ -276,7 +276,7 @@ fn super_deep_benchmarks(c: &mut Criterion) {
     group.finish();
 }
 
-fn taffy_benchmarks(c: &mut Criterion) {
+fn takia_benchmarks(c: &mut Criterion) {
     huge_nested_benchmarks(c);
     wide_benchmarks(c);
     absolute_benchmarks(c);
@@ -285,5 +285,5 @@ fn taffy_benchmarks(c: &mut Criterion) {
     super_deep_benchmarks(c);
 }
 
-criterion_group!(name = benches; config = taffy_benchmarks::criterion_config(); targets = taffy_benchmarks);
+criterion_group!(name = benches; config = takia_benchmarks::criterion_config(); targets = takia_benchmarks);
 criterion_main!(benches);

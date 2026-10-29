@@ -4,8 +4,8 @@
 //! shrink-to-fit grid container).
 #[cfg(feature = "grid")]
 mod grid_percentage_rerun {
-    use taffy::prelude::*;
-    use taffy_test_helpers::{new_test_tree, test_measure_function, TestNodeContext, WritingMode};
+    use takia::prelude::*;
+    use takia_test_helpers::{new_test_tree, test_measure_function, TestNodeContext, WritingMode};
 
     /// Returns (container width, item width)
     fn layout_fit_content_percent_column(available_width: AvailableSpace) -> (f32, f32) {
@@ -50,8 +50,8 @@ mod grid_percentage_rerun {
     /// `grid-template-rows: auto 20% auto` whose items are 20px, 60px and 20px tall respectively.
     /// Mirrors WPT css/css-grid/layout-algorithm/grid-percent-rows-filled-shrinkwrap-001.html
     fn layout_percent_row_shrinkwrap(available_height: AvailableSpace) -> (f32, f32, f32, f32) {
-        let mut tree: TaffyTree<()> = TaffyTree::new();
-        let item = |tree: &mut TaffyTree<()>, height: f32| {
+        let mut tree: TakiaTree<()> = TakiaTree::new();
+        let item = |tree: &mut TakiaTree<()>, height: f32| {
             tree.new_leaf(Style { size: Size { width: length(20.0), height: length(height) }, ..Default::default() })
                 .unwrap()
         };

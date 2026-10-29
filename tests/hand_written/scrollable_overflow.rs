@@ -3,10 +3,10 @@
 //! excluded for scroll containers, while boxes only partially in the unreachable region
 //! contribute their whole border box.
 
-use taffy::geometry::Point;
-use taffy::prelude::*;
-use taffy::style::{Direction, Display, Overflow, Position};
-use taffy_test_helpers::new_test_tree;
+use takia::geometry::Point;
+use takia::prelude::*;
+use takia::style::{Direction, Display, Overflow, Position};
+use takia_test_helpers::new_test_tree;
 
 const CONTAINER: f32 = 200.0;
 const CHILD: f32 = 50.0;

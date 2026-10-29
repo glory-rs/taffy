@@ -1,33 +1,33 @@
 #[cfg(test)]
 mod root_constraints {
-    use taffy::prelude::{FromLength, FromPercent};
-    use taffy::style_helpers::{length, TaffyMaxContent};
-    use taffy::{AvailableSpace, Rect, Size, Style, TaffyTree};
-    use taffy_test_helpers::new_test_tree;
+    use takia::prelude::{FromLength, FromPercent};
+    use takia::style_helpers::{length, TakiaMaxContent};
+    use takia::{AvailableSpace, Rect, Size, Style, TakiaTree};
+    use takia_test_helpers::new_test_tree;
 
     #[test]
     fn root_with_percentage_size() {
-        let mut taffy = new_test_tree();
-        let node = taffy
-            .new_leaf(taffy::style::Style {
-                size: taffy::geometry::Size {
-                    width: taffy::style::Dimension::from_percent(1.0),
-                    height: taffy::style::Dimension::from_percent(1.0),
+        let mut takia = new_test_tree();
+        let node = takia
+            .new_leaf(takia::style::Style {
+                size: takia::geometry::Size {
+                    width: takia::style::Dimension::from_percent(1.0),
+                    height: takia::style::Dimension::from_percent(1.0),
                 },
                 ..Default::default()
             })
             .unwrap();
 
-        taffy
+        takia
             .compute_layout(
                 node,
-                taffy::geometry::Size {
+                takia::geometry::Size {
                     width: AvailableSpace::Definite(100.0),
                     height: AvailableSpace::Definite(200.0),
                 },
             )
             .unwrap();
-        let layout = taffy.layout(node).unwrap();
+        let layout = takia.layout(node).unwrap();
 
         assert_eq!(layout.size.width, 100.0);
         assert_eq!(layout.size.height, 200.0);
@@ -35,19 +35,19 @@ mod root_constraints {
 
     #[test]
     fn root_with_no_size() {
-        let mut taffy = new_test_tree();
-        let node = taffy.new_leaf(taffy::style::Style::default()).unwrap();
+        let mut takia = new_test_tree();
+        let node = takia.new_leaf(takia::style::Style::default()).unwrap();
 
-        taffy
+        takia
             .compute_layout(
                 node,
-                taffy::geometry::Size {
+                takia::geometry::Size {
                     width: AvailableSpace::Definite(100.0),
                     height: AvailableSpace::Definite(100.0),
                 },
             )
             .unwrap();
-        let layout = taffy.layout(node).unwrap();
+        let layout = takia.layout(node).unwrap();
 
         assert_eq!(layout.size.width, 0.0);
         assert_eq!(layout.size.height, 0.0);
@@ -55,27 +55,27 @@ mod root_constraints {
 
     #[test]
     fn root_with_larger_size() {
-        let mut taffy = new_test_tree();
-        let node = taffy
-            .new_leaf(taffy::style::Style {
-                size: taffy::geometry::Size {
-                    width: taffy::style::Dimension::from_length(200.0),
-                    height: taffy::style::Dimension::from_length(200.0),
+        let mut takia = new_test_tree();
+        let node = takia
+            .new_leaf(takia::style::Style {
+                size: takia::geometry::Size {
+                    width: takia::style::Dimension::from_length(200.0),
+                    height: takia::style::Dimension::from_length(200.0),
                 },
                 ..Default::default()
             })
             .unwrap();
 
-        taffy
+        takia
             .compute_layout(
                 node,
-                taffy::geometry::Size {
+                takia::geometry::Size {
                     width: AvailableSpace::Definite(100.0),
                     height: AvailableSpace::Definite(100.0),
                 },
             )
             .unwrap();
-        let layout = taffy.layout(node).unwrap();
+        let layout = takia.layout(node).unwrap();
 
         assert_eq!(layout.size.width, 200.0);
         assert_eq!(layout.size.height, 200.0);
@@ -83,7 +83,7 @@ mod root_constraints {
 
     #[test]
     fn root_padding_and_border_larger_than_definite_size() {
-        let mut tree: TaffyTree<()> = TaffyTree::with_capacity(16);
+        let mut tree: TakiaTree<()> = TakiaTree::with_capacity(16);
 
         let child = tree.new_leaf(Style::default()).unwrap();
 

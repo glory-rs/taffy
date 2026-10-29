@@ -1,11 +1,11 @@
 use roxmltree::Document;
 use std::{fmt::Debug, io::Write, path::PathBuf, str::FromStr};
-use taffy::{
-    prelude::TaffyZero as _, AlignContent, AlignItems, AlignSelf, AvailableSpace, CheapCloneStr, Dimension,
+use takia::{
+    prelude::TakiaZero as _, AlignContent, AlignItems, AlignSelf, AvailableSpace, CheapCloneStr, Dimension,
     GridAutoTracks, GridTemplateComponent, GridTemplateTracks, JustifyContent, JustifyItems, LengthPercentage,
-    LengthPercentageAuto, Line, NodeId, Point, PrintTree, Rect, Size, TaffyTree,
+    LengthPercentageAuto, Line, NodeId, Point, PrintTree, Rect, Size, TakiaTree,
 };
-use taffy_test_helpers::{test_measure_function, TestNodeContext};
+use takia_test_helpers::{test_measure_function, TestNodeContext};
 
 #[path = "./xml/mod.rs"]
 mod xml;
@@ -63,7 +63,7 @@ fn parse_track_list(input: &str) -> Vec<TrackListToken> {
 }
 
 /// Compare two resolved track list strings, comparing line names exactly and track sizes with
-/// a tolerance (Chrome and Taffy format/round subpixel used sizes slightly differently)
+/// a tolerance (Chrome and Takia format/round subpixel used sizes slightly differently)
 fn track_lists_match(expected: &str, actual: &str) -> bool {
     let expected = parse_track_list(expected);
     let actual = parse_track_list(actual);
@@ -187,7 +187,7 @@ fn run_xml_test(group: &str, name: &str) {
     };
 
     // Construct tree and expectations
-    let mut tree = TaffyTree::<TestNodeContext>::new();
+    let mut tree = TakiaTree::<TestNodeContext>::new();
     if use_rounding {
         tree.enable_rounding();
     } else {
@@ -203,7 +203,7 @@ fn run_xml_test(group: &str, name: &str) {
 
     // Compute layout
     #[cfg(all(debug_assertions, feature = "std"))]
-    let cache_mode_change_evictions = taffy::tree::cache_mode_change_evictions();
+    let cache_mode_change_evictions = takia::tree::cache_mode_change_evictions();
 
     tree.compute_layout_with_measure(root_node_id, available_space, test_measure_function).unwrap();
 
@@ -212,7 +212,7 @@ fn run_xml_test(group: &str, name: &str) {
     // of the two in a single pass would make it throw its cache away on every change.
     #[cfg(all(debug_assertions, feature = "std"))]
     assert_eq!(
-        taffy::tree::cache_mode_change_evictions(),
+        takia::tree::cache_mode_change_evictions(),
         cache_mode_change_evictions,
         "a node was laid out with more than one cache mode in a single layout pass"
     );
@@ -234,8 +234,8 @@ fn run_xml_test(group: &str, name: &str) {
 fn construct_tree(
     input: roxmltree::Node,
     expected_x: roxmltree::Node,
-    tree: &mut TaffyTree<TestNodeContext>,
-    parent: Option<taffy::NodeId>,
+    tree: &mut TakiaTree<TestNodeContext>,
+    parent: Option<takia::NodeId>,
 ) -> OutputNode {
     if input.first_element_child().is_some() {
         let tnode = tree.new_with_children(build_style(input), &[]).unwrap();
@@ -290,7 +290,7 @@ fn maybe_parse<T: FromStr>(input: Option<&str>) -> Option<T> {
     input.and_then(|input| input.parse().ok())
 }
 
-fn get_computed_expectations(tree: &TaffyTree<TestNodeContext>, node_id: NodeId) -> OutputNode {
+fn get_computed_expectations(tree: &TakiaTree<TestNodeContext>, node_id: NodeId) -> OutputNode {
     let layout = tree.get_final_layout(node_id);
     #[cfg(feature = "content_size")]
     let scroll_size = Some(Size { width: layout.scroll_width(), height: layout.scroll_height() });
@@ -315,19 +315,19 @@ fn get_computed_expectations(tree: &TaffyTree<TestNodeContext>, node_id: NodeId)
 }
 
 /// Get the resolved value of the grid-template-rows/grid-template-columns properties for grid
-/// containers, as exposed through [`taffy::DetailedGridInfo`]
+/// containers, as exposed through [`takia::DetailedGridInfo`]
 #[cfg(all(feature = "grid", feature = "detailed_layout_info"))]
-fn get_resolved_track_lists(tree: &TaffyTree<TestNodeContext>, node_id: NodeId) -> (Option<String>, Option<String>) {
+fn get_resolved_track_lists(tree: &TakiaTree<TestNodeContext>, node_id: NodeId) -> (Option<String>, Option<String>) {
     match tree.detailed_layout_info(node_id) {
-        taffy::DetailedLayoutInfo::Grid(info) => {
+        takia::DetailedLayoutInfo::Grid(info) => {
             (Some(info.grid_template_rows(1.0)), Some(info.grid_template_columns(1.0)))
         }
-        taffy::DetailedLayoutInfo::None => (None, None),
+        takia::DetailedLayoutInfo::None => (None, None),
     }
 }
 
 #[cfg(not(all(feature = "grid", feature = "detailed_layout_info")))]
-fn get_resolved_track_lists(_tree: &TaffyTree<TestNodeContext>, _node_id: NodeId) -> (Option<String>, Option<String>) {
+fn get_resolved_track_lists(_tree: &TakiaTree<TestNodeContext>, _node_id: NodeId) -> (Option<String>, Option<String>) {
     (None, None)
 }
 
@@ -354,13 +354,13 @@ fn build_expectations(xnode: roxmltree::Node, node_id: NodeId) -> OutputNode {
     }
 }
 
-fn build_style<S: CheapCloneStr>(xnode: roxmltree::Node) -> taffy::Style<S> {
+fn build_style<S: CheapCloneStr>(xnode: roxmltree::Node) -> takia::Style<S> {
     let grid_template_rows: GridTemplateTracks<S, GridTemplateComponent<S>> =
         parse_or_default(xnode.attribute("grid-template-rows"));
     let grid_template_columns: GridTemplateTracks<S, GridTemplateComponent<S>> =
         parse_or_default(xnode.attribute("grid-template-columns"));
 
-    taffy::Style {
+    takia::Style {
         dummy: std::marker::PhantomData,
         display: parse_or_default(xnode.attribute("display")),
         direction: parse_or_default(xnode.attribute("direction")),

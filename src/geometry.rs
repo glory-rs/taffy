@@ -77,7 +77,7 @@ impl AbstractAxis {
     }
 
     /// Convert an `AbstractAxis` into an `AbsoluteAxis` naively assuming that the Inline axis is Horizontal
-    /// This is currently always true, but will change if Taffy ever implements the `writing_mode` property
+    /// This is currently always true, but will change if Takia ever implements the `writing_mode` property
     #[inline]
     pub const fn as_abs_naive(&self) -> AbsoluteAxis {
         match self {

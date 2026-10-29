@@ -1,5 +1,5 @@
 [package]
-name = "taffy"
+name = "takia"
 version = "0.15.0"
 authors = [
     "Alice Cecile <alice.i.cecile@gmail.com>",
@@ -8,9 +8,9 @@ authors = [
 ]
 edition = "2021"
 rust-version = "1.71"
-include = ["src/**/*", "examples/**/*", "Cargo.toml", "README.md"]
-description = "A flexible UI layout library "
-repository = "https://github.com/DioxusLabs/taffy"
+include = ["src/**/*", "examples/**/*", "Cargo.toml", "README.md", "LICENSE*", "UPSTREAM.md", "RELEASING.md"]
+description = "Glory-maintained Taffy fork with corrected fractional flex gap layout"
+repository = "https://github.com/glory-rs/takia"
 keywords = ["cross-platform", "layout", "flexbox", "css-grid", "grid"]
 categories = ["gui"]
 license = "MIT"
@@ -34,7 +34,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 [features]
 default = [
     "std",
-    "taffy_tree",
+    "takia_tree",
     "flexbox",
     "flexbox_balance",
     "grid",
@@ -62,27 +62,27 @@ grid = ["dep:smallvec"]
 calc = []
 ## Causes all algorithms to compute and output a content size for each node
 content_size = []
-## Causes algorithms to stores detailed information of the nodes in TaffyTree, with only CSS Grid supporting this.
+## Causes algorithms to stores detailed information of the nodes in TakiaTree, with only CSS Grid supporting this.
 detailed_layout_info = []
 ## Use strict provenance APIs for pointer manipulation. Using this feature requires Rust 1.84 or higher.
 strict_provenance = []
 
-#! ### Taffy Tree
+#! ### Takia Tree
 
-## Enable the built-in Taffy node tree. See [`TaffyTree`](crate::TaffyTree).
-taffy_tree = ["dep:slotmap"]
+## Enable the built-in Takia node tree. See [`TakiaTree`](crate::TakiaTree).
+takia_tree = ["dep:slotmap"]
 
 #! ### Other
 
 ## Add [`serde`] derives to Style structs
 serde = ["dep:serde", "serde/alloc"]
-## Implement `FromStr` trait for Taffy style types
+## Implement `FromStr` trait for Takia style types
 parse = ["dep:cssparser"]
 ## Enable the `parse` feature with proc-macro dependent optimisations
 parse_faster = ["parse", "cssparser/fast_match_byte"]
-## Allow Taffy to depend on the [`Rust Standard Library`](std)
+## Allow Takia to depend on the [`Rust Standard Library`](std)
 std = ["serde?/std", "slotmap?/std"]
-## Deprecated no-op: Taffy always depends on the `alloc` library. Retained so that existing `features = ["alloc"]` configurations keep compiling.
+## Deprecated no-op: Takia always depends on the `alloc` library. Retained so that existing `features = ["alloc"]` configurations keep compiling.
 alloc = []
 ## Internal feature for debugging
 debug = ["std"]
@@ -92,10 +92,10 @@ profile = ["std"]
 [dev-dependencies]
 serde_json = "1.0.93"
 roxmltree = "0.21.1"
-taffy_test_helpers = { path = "tests/common"}
+takia_test_helpers = { path = "tests/common"}
 
 # Enable default features for tests and examples
-taffy = { path = ".", features = ["parse"] }
+takia = { path = ".", features = ["parse"] }
 
 [profile.release]
 lto = true
@@ -120,5 +120,5 @@ members = [
     "tests/common",
 ]
 # The Parley example and benches are excluded from the workspace as their dependencies require a newer
-# Rust version than Taffy's MSRV
+# Rust version than Takia's MSRV
 exclude = ["examples/parley", "benches"]

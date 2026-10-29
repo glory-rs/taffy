@@ -17,11 +17,11 @@ pub mod yg {
     pub type YogaTree = SlotMap<DefaultKey, Node>;
 }
 mod tf {
-    pub use taffy::prelude::*;
+    pub use takia::prelude::*;
 }
-use tf::Style as TaffyStyle;
+use tf::Style as TakiaStyle;
 
-pub struct YogaTreeBuilder<R: Rng, G: GenStyle<TaffyStyle>> {
+pub struct YogaTreeBuilder<R: Rng, G: GenStyle<TakiaStyle>> {
     rng: R,
     style_generator: G,
     tree: yg::YogaTree,
@@ -29,7 +29,7 @@ pub struct YogaTreeBuilder<R: Rng, G: GenStyle<TaffyStyle>> {
 }
 
 // Implement the BuildTree trait
-impl<R: Rng, G: GenStyle<TaffyStyle>> BuildTree<R, G> for YogaTreeBuilder<R, G> {
+impl<R: Rng, G: GenStyle<TakiaStyle>> BuildTree<R, G> for YogaTreeBuilder<R, G> {
     const NAME: &'static str = "Yoga";
     type Tree = yg::YogaTree;
     type Node = DefaultKey;
@@ -85,11 +85,11 @@ impl<R: Rng, G: GenStyle<TaffyStyle>> BuildTree<R, G> for YogaTreeBuilder<R, G> 
     }
 }
 
-impl<G: GenStyle<TaffyStyle>> BuildTreeExt<G> for YogaTreeBuilder<ChaCha8Rng, G> {}
+impl<G: GenStyle<TakiaStyle>> BuildTreeExt<G> for YogaTreeBuilder<ChaCha8Rng, G> {}
 
-// impl<R: Rng, G: GenStyle<TaffyStyle>> YogaTreeBuilder<R, G> {
+// impl<R: Rng, G: GenStyle<TakiaStyle>> YogaTreeBuilder<R, G> {
 //     /// Create a YogaTreeBuilder with a standard rng from a style generator
-//     fn new<NG: GenStyle<TaffyStyle>>(mut style_generator: NG) -> YogaTreeBuilder<ChaCha8Rng, NG> {
+//     fn new<NG: GenStyle<TakiaStyle>>(mut style_generator: NG) -> YogaTreeBuilder<ChaCha8Rng, NG> {
 //         let mut rng = ChaCha8Rng::seed_from_u64(STANDARD_RNG_SEED);
 //         let mut tree = SlotMap::new();
 //         let root = create_yg_node(&mut tree, &style_generator.create_root_style(&mut rng), &[]);
@@ -97,7 +97,7 @@ impl<G: GenStyle<TaffyStyle>> BuildTreeExt<G> for YogaTreeBuilder<ChaCha8Rng, G>
 //     }
 
 //     /// Create a YogaTreeBuilder with a standard rng from a style generator
-//     fn with_seed<NG: GenStyle<TaffyStyle>>(seed: u64, mut style_generator: NG) -> YogaTreeBuilder<ChaCha8Rng, NG> {
+//     fn with_seed<NG: GenStyle<TakiaStyle>>(seed: u64, mut style_generator: NG) -> YogaTreeBuilder<ChaCha8Rng, NG> {
 //         let mut rng = ChaCha8Rng::seed_from_u64(seed);
 //         let mut tree = SlotMap::new();
 //         let root = create_yg_node(&mut tree, &style_generator.create_root_style(&mut rng), &[]);
@@ -105,7 +105,7 @@ impl<G: GenStyle<TaffyStyle>> BuildTreeExt<G> for YogaTreeBuilder<ChaCha8Rng, G>
 //     }
 
 //     /// Create a YogaTreeBuilder from a random number generator and a style generator
-//     fn with_rng<NR: Rng, NG: GenStyle<TaffyStyle>>(mut rng: NR, mut style_generator: NG) -> YogaTreeBuilder<NR, NG> {
+//     fn with_rng<NR: Rng, NG: GenStyle<TakiaStyle>>(mut rng: NR, mut style_generator: NG) -> YogaTreeBuilder<NR, NG> {
 //         let mut tree = SlotMap::new();
 //         let root = create_yg_node(&mut tree, &style_generator.create_root_style(&mut rng), &[]);
 //         YogaTreeBuilder { rng, style_generator, tree, root }
@@ -114,7 +114,7 @@ impl<G: GenStyle<TaffyStyle>> BuildTreeExt<G> for YogaTreeBuilder<ChaCha8Rng, G>
 
 fn create_yg_node(tree: &mut yg::YogaTree, style: &tf::Style, children: &[yg::DefaultKey]) -> yg::DefaultKey {
     let mut node = yg::Node::new();
-    apply_taffy_style(&mut node, &style);
+    apply_takia_style(&mut node, &style);
     for (i, child) in children.into_iter().enumerate() {
         node.insert_child(&mut tree[*child], i);
     }
@@ -194,7 +194,7 @@ fn content_into_justify(align: tf::JustifyContent) -> yg::Justify {
     }
 }
 
-fn apply_taffy_style(node: &mut yg::Node, style: &tf::Style) {
+fn apply_takia_style(node: &mut yg::Node, style: &tf::Style) {
     // display
     node.set_display(match style.display {
         tf::Display::None => yg::Display::None,

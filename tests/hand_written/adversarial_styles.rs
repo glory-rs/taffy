@@ -4,12 +4,12 @@
 //! These tests are primarily about layout *terminating* without panicking.
 #[cfg(test)]
 mod adversarial_styles {
-    use taffy::prelude::*;
-    use taffy::style::{
+    use takia::prelude::*;
+    use takia::style::{
         Direction, GridTemplateComponent, GridTemplateRepetition, MaxTrackSizingFunction, MinTrackSizingFunction,
         TrackSizingFunction,
     };
-    use taffy_test_helpers::new_test_tree;
+    use takia_test_helpers::new_test_tree;
 
     fn definite(size: f32) -> Size<AvailableSpace> {
         Size { width: AvailableSpace::Definite(size), height: AvailableSpace::Definite(size) }

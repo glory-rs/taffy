@@ -3,9 +3,9 @@ use parley::{style::StyleProperty, FontContext, LayoutContext};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use std::iter;
-use taffy::prelude::*;
-use taffy::style::Style;
-use taffy_benchmarks::{bench_layout, benchmark_group, TaffyLayoutTree};
+use takia::prelude::*;
+use takia::style::Style;
+use takia_benchmarks::{bench_layout, benchmark_group, TakiaLayoutTree};
 
 pub const LOREM_IPSUM : &str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
@@ -25,9 +25,9 @@ impl ParleyTextContext {
 
     fn measure(
         &mut self,
-        known_dimensions: taffy::Size<Option<f32>>,
-        available_space: taffy::Size<taffy::AvailableSpace>,
-    ) -> taffy::Size<f32> {
+        known_dimensions: takia::Size<Option<f32>>,
+        available_space: takia::Size<takia::AvailableSpace>,
+    ) -> takia::Size<f32> {
         // Compute width
         let width: f32 = known_dimensions.width.unwrap_or_else(|| {
             let widths = self.layout.calculate_content_widths();
@@ -43,13 +43,13 @@ impl ParleyTextContext {
         self.layout.break_all_lines(Some(width));
         let height = self.layout.height();
 
-        taffy::Size { width, height }
+        takia::Size { width, height }
     }
 }
 
 fn measure_function(
-    known_dimensions: taffy::Size<Option<f32>>,
-    available_space: taffy::Size<taffy::AvailableSpace>,
+    known_dimensions: takia::Size<Option<f32>>,
+    available_space: takia::Size<takia::AvailableSpace>,
     node_context: Option<&mut ParleyTextContext>,
 ) -> Size<f32> {
     if let Size { width: Some(width), height: Some(height) } = known_dimensions {
@@ -100,7 +100,7 @@ fn random_flex_style<R: Rng>(rng: &mut R) -> Style {
 }
 
 fn build_mixed_tree(
-    taffy: &mut TaffyTree<ParleyTextContext>,
+    takia: &mut TakiaTree<ParleyTextContext>,
     layout_ctx: &mut LayoutContext,
     font_ctx: &mut FontContext,
     depth: usize,
@@ -111,11 +111,11 @@ fn build_mixed_tree(
     if depth == 0 {
         let font_size = 14.0;
         let context = ParleyTextContext::new(LOREM_IPSUM, font_size, layout_ctx, font_ctx);
-        return taffy.new_leaf_with_context(Style::default(), context).unwrap();
+        return takia.new_leaf_with_context(Style::default(), context).unwrap();
     }
 
     let children: Vec<NodeId> =
-        (0..width).map(|_| build_mixed_tree(taffy, layout_ctx, font_ctx, depth - 1, width, rng, !is_grid)).collect();
+        (0..width).map(|_| build_mixed_tree(takia, layout_ctx, font_ctx, depth - 1, width, rng, !is_grid)).collect();
 
     let style = if is_grid {
         random_nxn_grid_style(rng, (width as f32).sqrt().ceil() as usize)
@@ -123,7 +123,7 @@ fn build_mixed_tree(
         random_flex_style(rng)
     };
 
-    taffy.new_with_children(style, &children).unwrap()
+    takia.new_with_children(style, &children).unwrap()
 }
 
 fn mixed_benchmark(c: &mut Criterion) {
@@ -143,10 +143,10 @@ fn mixed_benchmark(c: &mut Criterion) {
                     b,
                     &mut tree,
                     || {
-                        let mut taffy = TaffyTree::new();
+                        let mut takia = TakiaTree::new();
                         let mut rng = ChaCha8Rng::seed_from_u64(12345);
                         let root = build_mixed_tree(
-                            &mut taffy,
+                            &mut takia,
                             &mut layout_ctx.borrow_mut(),
                             &mut font_ctx.borrow_mut(),
                             depth,
@@ -154,7 +154,7 @@ fn mixed_benchmark(c: &mut Criterion) {
                             &mut rng,
                             true,
                         );
-                        TaffyLayoutTree::new((taffy, root))
+                        TakiaLayoutTree::new((takia, root))
                     },
                     |tree| tree.mark_all_dirty(),
                     |tree| {
@@ -163,7 +163,7 @@ fn mixed_benchmark(c: &mut Criterion) {
                                 tree.root,
                                 Size::MAX_CONTENT,
                                 |inputs, _node_id, node_context, style| {
-                                    taffy::compute_leaf_layout(
+                                    takia::compute_leaf_layout(
                                         inputs,
                                         style,
                                         |_, _| 0.0,
@@ -182,5 +182,5 @@ fn mixed_benchmark(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(name = benches; config = taffy_benchmarks::criterion_config(); targets = mixed_benchmark);
+criterion_group!(name = benches; config = takia_benchmarks::criterion_config(); targets = mixed_benchmark);
 criterion_main!(benches);

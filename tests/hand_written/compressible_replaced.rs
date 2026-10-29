@@ -7,20 +7,20 @@
 //! set *is* stretched between them (CSS2 §10.3.7 applies, not §10.3.8).
 #[cfg(test)]
 mod compressible_replaced {
-    use taffy::prelude::*;
-    use taffy::style::CoreStyle;
-    use taffy::{Point, TaffyTree};
-    use taffy_test_helpers::{new_test_tree, test_measure_function, TestNodeContext};
+    use takia::prelude::*;
+    use takia::style::CoreStyle;
+    use takia::{Point, TakiaTree};
+    use takia_test_helpers::{new_test_tree, test_measure_function, TestNodeContext};
 
     // A 150x20 text input (height = width * 20/150)
     const INPUT: TestNodeContext = TestNodeContext::aspect_ratio(150.0, 20.0 / 150.0);
 
     fn layout_child(container: Style, child_style: Style) -> Layout {
-        let mut taffy: TaffyTree<TestNodeContext> = new_test_tree();
-        let child = taffy.new_leaf_with_context(child_style, INPUT).unwrap();
-        let root = taffy.new_with_children(container, &[child]).unwrap();
-        taffy.compute_layout_with_measure(root, Size::MAX_CONTENT, test_measure_function).unwrap();
-        *taffy.layout(child).unwrap()
+        let mut takia: TakiaTree<TestNodeContext> = new_test_tree();
+        let child = takia.new_leaf_with_context(child_style, INPUT).unwrap();
+        let root = takia.new_with_children(container, &[child]).unwrap();
+        takia.compute_layout_with_measure(root, Size::MAX_CONTENT, test_measure_function).unwrap();
+        *takia.layout(child).unwrap()
     }
 
     fn block_container() -> Style {

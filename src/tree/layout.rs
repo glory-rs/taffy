@@ -1,7 +1,7 @@
 //! Final data structures that represent the high-level UI layout
 use crate::geometry::{AbsoluteAxis, Line, Point, Rect, Size};
 use crate::style::{AlignItemsKeyword, AlignSelf, AlignmentSafety, AvailableSpace, CheapCloneStr, Position};
-use crate::style_helpers::TaffyMaxContent;
+use crate::style_helpers::TakiaMaxContent;
 use crate::sys::DefaultCheapStr;
 use crate::tree::NodeId;
 use crate::util::sys::{f32_max, f32_min};

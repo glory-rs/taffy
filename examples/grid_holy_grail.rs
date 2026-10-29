@@ -16,10 +16,10 @@ fn default<T: Default>() -> T {
 }
 
 #[cfg(feature = "grid")]
-fn main() -> Result<(), taffy::TaffyError> {
-    use taffy::prelude::*;
+fn main() -> Result<(), takia::TakiaError> {
+    use takia::prelude::*;
 
-    let mut taffy: TaffyTree<()> = TaffyTree::new();
+    let mut takia: TakiaTree<()> = TakiaTree::new();
 
     // Setup the grid
     let root_style = Style {
@@ -31,18 +31,18 @@ fn main() -> Result<(), taffy::TaffyError> {
     };
 
     // Define the child nodes
-    let header = taffy.new_leaf(Style { grid_row: line(1), grid_column: span(3), ..default() })?;
-    let left_sidebar = taffy.new_leaf(Style { grid_row: line(2), grid_column: line(1), ..default() })?;
-    let content_area = taffy.new_leaf(Style { grid_row: line(2), grid_column: line(2), ..default() })?;
-    let right_sidebar = taffy.new_leaf(Style { grid_row: line(2), grid_column: line(3), ..default() })?;
-    let footer = taffy.new_leaf(Style { grid_row: line(3), grid_column: span(3), ..default() })?;
+    let header = takia.new_leaf(Style { grid_row: line(1), grid_column: span(3), ..default() })?;
+    let left_sidebar = takia.new_leaf(Style { grid_row: line(2), grid_column: line(1), ..default() })?;
+    let content_area = takia.new_leaf(Style { grid_row: line(2), grid_column: line(2), ..default() })?;
+    let right_sidebar = takia.new_leaf(Style { grid_row: line(2), grid_column: line(3), ..default() })?;
+    let footer = takia.new_leaf(Style { grid_row: line(3), grid_column: span(3), ..default() })?;
 
     // Create the container with the children
-    let root = taffy.new_with_children(root_style, &[header, left_sidebar, content_area, right_sidebar, footer])?;
+    let root = takia.new_with_children(root_style, &[header, left_sidebar, content_area, right_sidebar, footer])?;
 
     // Compute layout and print result
-    taffy.compute_layout(root, Size { width: length(800.0), height: length(600.0) })?;
-    taffy.print_tree(root);
+    takia.compute_layout(root, Size { width: length(800.0), height: length(600.0) })?;
+    takia.print_tree(root);
 
     Ok(())
 }

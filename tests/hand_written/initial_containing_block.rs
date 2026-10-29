@@ -2,8 +2,8 @@
 //! against a viewport-sized rectangle at the canvas origin, not against the root element's box.
 #[cfg(test)]
 mod initial_containing_block {
-    use taffy::prelude::*;
-    use taffy::Point;
+    use takia::prelude::*;
+    use takia::Point;
 
     const VIEWPORT: Size<AvailableSpace> =
         Size { width: AvailableSpace::Definite(800.0), height: AvailableSpace::Definite(600.0) };
@@ -23,7 +23,7 @@ mod initial_containing_block {
 
     #[test]
     fn root_is_placed_at_its_margin() {
-        let mut tree: TaffyTree<()> = TaffyTree::new();
+        let mut tree: TakiaTree<()> = TakiaTree::new();
         let root = tree.new_leaf(root_style()).unwrap();
         tree.compute_layout(root, VIEWPORT).unwrap();
 
@@ -35,7 +35,7 @@ mod initial_containing_block {
     #[test]
     fn inset_zero_fills_viewport() {
         for position in [Position::Absolute, Position::Fixed] {
-            let mut tree: TaffyTree<()> = TaffyTree::new();
+            let mut tree: TakiaTree<()> = TakiaTree::new();
             let oof = tree.new_leaf(oof_style(position, Rect::length(0.0), Size::auto())).unwrap();
             let root = tree.new_with_children(root_style(), &[oof]).unwrap();
             tree.compute_layout(root, VIEWPORT).unwrap();
@@ -50,7 +50,7 @@ mod initial_containing_block {
     #[test]
     fn bottom_right_insets_resolve_against_viewport() {
         for position in [Position::Absolute, Position::Fixed] {
-            let mut tree: TaffyTree<()> = TaffyTree::new();
+            let mut tree: TakiaTree<()> = TakiaTree::new();
             let oof = tree
                 .new_leaf(oof_style(
                     position,
@@ -69,7 +69,7 @@ mod initial_containing_block {
 
     #[test]
     fn static_position_is_unaffected() {
-        let mut tree: TaffyTree<()> = TaffyTree::new();
+        let mut tree: TakiaTree<()> = TakiaTree::new();
         let oof = tree
             .new_leaf(oof_style(Position::Absolute, Rect::auto(), Size { width: length(50.0), height: length(50.0) }))
             .unwrap();
@@ -84,7 +84,7 @@ mod initial_containing_block {
         // `position: fixed` roots cannot be covered by the generated tests (Chrome positions them
         // against the browser window rather than the `.viewport` wrapper), so check that they are
         // positioned like absolutely positioned roots against the initial containing block.
-        let mut tree: TaffyTree<()> = TaffyTree::new();
+        let mut tree: TakiaTree<()> = TakiaTree::new();
         let root = tree
             .new_leaf(Style {
                 display: Display::Block,

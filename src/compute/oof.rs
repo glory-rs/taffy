@@ -520,7 +520,7 @@ pub(crate) fn layout_oof_box<Tree: LayoutContainingBlock>(
     let is_replaced = child_style.is_replaced();
     let is_table = child_style.is_table();
     let item_direction = child_style.direction();
-    // Taffy only supports the `horizontal-tb` writing mode, so only the inline axis can be reversed.
+    // Takia only supports the `horizontal-tb` writing mode, so only the inline axis can be reversed.
     // `auto` (`None`) behaves as `normal` for absolutely positioned boxes: it does not defer to the
     // `*-items` properties of the containing block.
     let justify_self =

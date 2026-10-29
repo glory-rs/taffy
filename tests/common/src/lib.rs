@@ -1,10 +1,10 @@
-use taffy::{compute_leaf_layout, LayoutInput, LayoutOutput, NodeId, Size, Style, TaffyTree};
+use takia::{compute_leaf_layout, LayoutInput, LayoutOutput, NodeId, Size, Style, TakiaTree};
 
-/// Creates a `TaffyTree` that uses `TestNodeContext`. The purpose of this function is
-/// to allow `TaffyTree` to be monomophised once in this crate rather than separately for
+/// Creates a `TakiaTree` that uses `TestNodeContext`. The purpose of this function is
+/// to allow `TakiaTree` to be monomophised once in this crate rather than separately for
 /// each test crate.
-pub fn new_test_tree() -> TaffyTree<TestNodeContext> {
-    TaffyTree::new()
+pub fn new_test_tree() -> TakiaTree<TestNodeContext> {
+    TakiaTree::new()
 }
 
 /// A sharednode context for tests which means that tests compiled with separate crates
@@ -143,11 +143,11 @@ pub struct AhemTextMeasureData {
 impl AhemTextMeasureData {
     fn measure(
         &self,
-        known_dimensions: taffy::Size<Option<f32>>,
-        available_space: taffy::Size<taffy::AvailableSpace>,
-    ) -> taffy::Size<f32> {
-        use taffy::prelude::*;
-        use taffy::AbsoluteAxis;
+        known_dimensions: takia::Size<Option<f32>>,
+        available_space: takia::Size<takia::AvailableSpace>,
+    ) -> takia::Size<f32> {
+        use takia::prelude::*;
+        use takia::AbsoluteAxis;
 
         const ZWS: char = '\u{200B}';
         const H_WIDTH: f32 = 10.0;

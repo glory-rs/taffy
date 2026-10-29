@@ -3,13 +3,13 @@ use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use std::iter;
-use taffy::prelude::*;
-use taffy::style::Style;
-use taffy_benchmarks::{bench_layout, benchmark_group, TaffyLayoutTree};
+use takia::prelude::*;
+use takia::style::Style;
+use takia_benchmarks::{bench_layout, benchmark_group, TakiaLayoutTree};
 
 /// Build a random leaf node
-fn build_random_leaf(taffy: &mut TaffyTree, _rng: &mut ChaCha8Rng) -> NodeId {
-    taffy.new_with_children(Style { size: length(20.0), ..Default::default() }, &[]).unwrap()
+fn build_random_leaf(takia: &mut TakiaTree, _rng: &mut ChaCha8Rng) -> NodeId {
+    takia.new_with_children(Style { size: length(20.0), ..Default::default() }, &[]).unwrap()
 }
 
 fn random_grid_track<R: Rng>(rng: &mut R) -> GridTemplateComponent<String> {
@@ -41,8 +41,8 @@ fn random_nxn_grid_style<R: Rng>(rng: &mut R, track_count: usize) -> Style {
 }
 
 /// A tree with many children that have shallow depth
-fn build_grid_flat_hierarchy(col_count: usize, row_count: usize) -> (TaffyTree, NodeId) {
-    let mut taffy = TaffyTree::new();
+fn build_grid_flat_hierarchy(col_count: usize, row_count: usize) -> (TakiaTree, NodeId) {
+    let mut takia = TakiaTree::new();
     let mut rng = ChaCha8Rng::seed_from_u64(12345);
 
     let style = Style {
@@ -53,15 +53,15 @@ fn build_grid_flat_hierarchy(col_count: usize, row_count: usize) -> (TaffyTree, 
     };
 
     let children: Vec<_> =
-        iter::from_fn(|| Some(build_random_leaf(&mut taffy, &mut rng))).take(col_count * row_count).collect();
+        iter::from_fn(|| Some(build_random_leaf(&mut takia, &mut rng))).take(col_count * row_count).collect();
 
-    let root = taffy.new_with_children(style, children.as_slice()).unwrap();
-    (taffy, root)
+    let root = takia.new_with_children(style, children.as_slice()).unwrap();
+    (takia, root)
 }
 
 #[cfg(feature = "grid-alternating-spans")]
-fn build_grid_alternating_spans(item_count: usize, flow: GridAutoFlow) -> (TaffyTree, NodeId) {
-    let mut taffy = TaffyTree::new();
+fn build_grid_alternating_spans(item_count: usize, flow: GridAutoFlow) -> (TakiaTree, NodeId) {
+    let mut takia = TakiaTree::new();
     let is_row = matches!(flow, GridAutoFlow::Row | GridAutoFlow::RowDense);
     let children: Vec<_> = (0..item_count)
         .map(|i| {
@@ -72,7 +72,7 @@ fn build_grid_alternating_spans(item_count: usize, flow: GridAutoFlow) -> (Taffy
             } else {
                 style.grid_column = locked_axis;
             }
-            taffy.new_leaf(style).unwrap()
+            takia.new_leaf(style).unwrap()
         })
         .collect();
     let mut style = Style {
@@ -87,17 +87,17 @@ fn build_grid_alternating_spans(item_count: usize, flow: GridAutoFlow) -> (Taffy
     } else {
         style.grid_template_rows = vec![length(1.0); item_count];
     }
-    let root = taffy.new_with_children(style, &children).unwrap();
-    (taffy, root)
+    let root = takia.new_with_children(style, &children).unwrap();
+    (takia, root)
 }
 
 /// A helper function to recursively construct a deep tree
 pub fn build_deep_grid_tree(
-    tree: &mut TaffyTree,
+    tree: &mut TakiaTree,
     levels: usize,
     track_count: usize,
-    create_leaf_node: &mut impl FnMut(&mut TaffyTree) -> NodeId,
-    create_container_node: &mut impl FnMut(&mut TaffyTree, Vec<NodeId>) -> NodeId,
+    create_leaf_node: &mut impl FnMut(&mut TakiaTree) -> NodeId,
+    create_container_node: &mut impl FnMut(&mut TakiaTree, Vec<NodeId>) -> NodeId,
 ) -> Vec<NodeId> {
     // The extra one is for a position:absolute child
     let child_count = track_count * track_count;
@@ -119,21 +119,21 @@ pub fn build_deep_grid_tree(
 }
 
 /// A tree with a higher depth for a more realistic scenario
-fn build_taffy_deep_grid_hierarchy(levels: usize, track_count: usize) -> (TaffyTree, NodeId) {
+fn build_takia_deep_grid_hierarchy(levels: usize, track_count: usize) -> (TakiaTree, NodeId) {
     let mut rng = ChaCha8Rng::seed_from_u64(12345);
-    let mut build_leaf_node = |taffy: &mut TaffyTree| build_random_leaf(taffy, &mut rng);
+    let mut build_leaf_node = |takia: &mut TakiaTree| build_random_leaf(takia, &mut rng);
     let mut rng = ChaCha8Rng::seed_from_u64(12345);
-    let mut build_flex_node = |taffy: &mut TaffyTree, children: Vec<NodeId>| {
-        taffy.new_with_children(random_nxn_grid_style(&mut rng, track_count), &children).unwrap()
+    let mut build_flex_node = |takia: &mut TakiaTree, children: Vec<NodeId>| {
+        takia.new_with_children(random_nxn_grid_style(&mut rng, track_count), &children).unwrap()
     };
 
-    let mut taffy = TaffyTree::new();
-    let tree = build_deep_grid_tree(&mut taffy, levels, track_count, &mut build_leaf_node, &mut build_flex_node);
-    let root = taffy.new_with_children(Style::DEFAULT, &tree).unwrap();
-    (taffy, root)
+    let mut takia = TakiaTree::new();
+    let tree = build_deep_grid_tree(&mut takia, levels, track_count, &mut build_leaf_node, &mut build_flex_node);
+    let root = takia.new_with_children(Style::DEFAULT, &tree).unwrap();
+    (takia, root)
 }
 
-fn taffy_benchmarks(c: &mut Criterion) {
+fn takia_benchmarks(c: &mut Criterion) {
     #[cfg(feature = "grid-alternating-spans")]
     {
         let mut group = benchmark_group(c, "grid/alternating_spans");
@@ -147,7 +147,7 @@ fn taffy_benchmarks(c: &mut Criterion) {
                         bench_layout(
                             b,
                             &mut tree,
-                            || TaffyLayoutTree::new(build_grid_alternating_spans(item_count, flow)),
+                            || TakiaLayoutTree::new(build_grid_alternating_spans(item_count, flow)),
                             |tree| tree.mark_all_dirty(),
                             |tree| tree.tree.compute_layout(tree.root, Size::MAX_CONTENT).unwrap(),
                         )
@@ -168,7 +168,7 @@ fn taffy_benchmarks(c: &mut Criterion) {
                 bench_layout(
                     b,
                     &mut tree,
-                    || TaffyLayoutTree::new(build_grid_flat_hierarchy(track_count, track_count)),
+                    || TakiaLayoutTree::new(build_grid_flat_hierarchy(track_count, track_count)),
                     |tree| tree.mark_all_dirty(),
                     |tree| tree.tree.compute_layout(tree.root, length(12000.0)).unwrap(),
                 )
@@ -188,7 +188,7 @@ fn taffy_benchmarks(c: &mut Criterion) {
                 bench_layout(
                     b,
                     &mut tree,
-                    || TaffyLayoutTree::new(build_taffy_deep_grid_hierarchy(levels, tracks)),
+                    || TakiaLayoutTree::new(build_takia_deep_grid_hierarchy(levels, tracks)),
                     |tree| tree.mark_all_dirty(),
                     |tree| tree.tree.compute_layout(tree.root, length(12000.0)).unwrap(),
                 )
@@ -204,7 +204,7 @@ fn taffy_benchmarks(c: &mut Criterion) {
             bench_layout(
                 b,
                 &mut tree,
-                || TaffyLayoutTree::new(build_taffy_deep_grid_hierarchy(levels, 1)),
+                || TakiaLayoutTree::new(build_takia_deep_grid_hierarchy(levels, 1)),
                 |tree| tree.mark_all_dirty(),
                 |tree| tree.tree.compute_layout(tree.root, max_content()).unwrap(),
             )
@@ -213,5 +213,5 @@ fn taffy_benchmarks(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(name = benches; config = taffy_benchmarks::criterion_config(); targets = taffy_benchmarks);
+criterion_group!(name = benches; config = takia_benchmarks::criterion_config(); targets = takia_benchmarks);
 criterion_main!(benches);

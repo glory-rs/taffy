@@ -16,7 +16,7 @@ If you'd like to help on a consistent basis or are interested in project managem
 
 ## The "just" task runner
 
-Taffy uses a task runner called [just](github.com/casey/just) to run tasks. This can be installed by running `cargo install --locked just`. This is just necessary for the commands of the form `just ...` to work.
+Takia uses a task runner called [just](github.com/casey/just) to run tasks. This can be installed by running `cargo install --locked just`. This is just necessary for the commands of the form `just ...` to work.
 If you do you not want to install `just` then you can peak into the `justfile` in the root of this repo to see the equivalent cargo command, which will usually be of the form `cargo run -rp <package> ...`.
 
 ## Testing

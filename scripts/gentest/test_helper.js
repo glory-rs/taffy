@@ -238,7 +238,7 @@ function describeElement(e) {
 
       // The computed position, not the inline style: the test base stylesheet sets
       // `position: relative` on all divs/spans/imgs, which is what Chrome lays out with,
-      // and which no longer matches Taffy's default (`static`).
+      // and which no longer matches Takia's default (`static`).
       position: parseEnum(computedStyle.position),
       direction: parseEnum(computedStyle.direction),
 
@@ -270,7 +270,7 @@ function describeElement(e) {
       flexShrink: parseNumber(e.style.flexShrink),
       flexBasis: parseDimension(e.style.flexBasis),
 
-      // Passed through verbatim (Taffy's test harness parses the CSS syntax directly),
+      // Passed through verbatim (Takia's test harness parses the CSS syntax directly),
       // which preserves line names that TrackSizingParser does not handle
       gridTemplateRows: e.style.gridTemplateRows || undefined,
       gridTemplateColumns: e.style.gridTemplateColumns || undefined,
@@ -321,8 +321,8 @@ function describeElement(e) {
 
     // The resolved value of the grid-template-rows/grid-template-columns properties
     // (https://www.w3.org/TR/css-grid-1/#resolved-track-list): the used track sizes and line
-    // names of the grid, which Taffy exposes through DetailedGridInfo. Fixtures can opt out
-    // with data-test-resolved-track-lists="false" (e.g. overlarge grids, where Taffy's
+    // names of the grid, which Takia exposes through DetailedGridInfo. Fixtures can opt out
+    // with data-test-resolved-track-lists="false" (e.g. overlarge grids, where Takia's
     // MAX_GRID_TRACKS clamp intentionally differs from Chrome's track limit)
     resolvedGridTemplateRows:
       computedStyle.display === "grid" && e.getAttribute("data-test-resolved-track-lists") !== "false"
@@ -362,9 +362,9 @@ function describeElement(e) {
       clientHeight: e.clientHeight,
     },
 
-    // The naive rounding can result in 1px gaps in the layout, so Taffy uses a smarter algorithm to avoid this.
+    // The naive rounding can result in 1px gaps in the layout, so Takia uses a smarter algorithm to avoid this.
     // Chrome also uses a smarter algorithm, but it doesn't expose the output of that rounding.
-    // So we just emulate Taffy's computation here.
+    // So we just emulate Takia's computation here.
     smartRoundedLayout: {
       width: Math.round(boundingRect.right) - Math.round(boundingRect.left),
       height: Math.round(boundingRect.bottom) - Math.round(boundingRect.top),

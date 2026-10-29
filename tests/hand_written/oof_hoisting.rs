@@ -3,8 +3,8 @@
 //! their `Layout.location` is relative to that containing block.
 #[cfg(test)]
 mod oof_hoisting {
-    use taffy::prelude::*;
-    use taffy::Point;
+    use takia::prelude::*;
+    use takia::Point;
 
     fn leaf_style(width: f32, height: f32) -> Style {
         Style { size: Size { width: length(width), height: length(height) }, ..Default::default() }
@@ -15,7 +15,7 @@ mod oof_hoisting {
     #[test]
     fn absolute_skips_static_parent() {
         for display in [Display::Block, Display::Flex, Display::Grid] {
-            let mut tree: TaffyTree<()> = TaffyTree::new();
+            let mut tree: TakiaTree<()> = TakiaTree::new();
             let abs = tree
                 .new_leaf(Style {
                     position: Position::Absolute,
@@ -62,7 +62,7 @@ mod oof_hoisting {
     #[test]
     fn hoisted_children_are_in_document_order() {
         for display in [Display::Block, Display::Flex, Display::Grid] {
-            let mut tree: TaffyTree<()> = TaffyTree::new();
+            let mut tree: TakiaTree<()> = TakiaTree::new();
             let abs_style = Style {
                 position: Position::Absolute,
                 size: Size { width: length(10.0), height: length(10.0) },
@@ -111,7 +111,7 @@ mod oof_hoisting {
     #[test]
     fn static_position_is_containing_block_relative() {
         for display in [Display::Block, Display::Flex, Display::Grid] {
-            let mut tree: TaffyTree<()> = TaffyTree::new();
+            let mut tree: TakiaTree<()> = TakiaTree::new();
             let abs = tree
                 .new_leaf(Style {
                     position: Position::Absolute,
@@ -162,7 +162,7 @@ mod oof_hoisting {
     /// A fixed box bubbles past positioned (non-transformed) ancestors all the way to the root.
     #[test]
     fn fixed_hoists_to_root() {
-        let mut tree: TaffyTree<()> = TaffyTree::new();
+        let mut tree: TakiaTree<()> = TakiaTree::new();
         let fixed = tree
             .new_leaf(Style {
                 position: Position::Fixed,
@@ -199,7 +199,7 @@ mod oof_hoisting {
     /// (which is positioned and therefore a containing block).
     #[test]
     fn absolute_within_absolute() {
-        let mut tree: TaffyTree<()> = TaffyTree::new();
+        let mut tree: TakiaTree<()> = TakiaTree::new();
         let inner = tree
             .new_leaf(Style {
                 position: Position::Absolute,
@@ -237,7 +237,7 @@ mod oof_hoisting {
     /// containing block) is re-swept and continues bubbling to the root.
     #[test]
     fn fixed_within_absolute_hoists_to_root() {
-        let mut tree: TaffyTree<()> = TaffyTree::new();
+        let mut tree: TakiaTree<()> = TakiaTree::new();
         let fixed = tree
             .new_leaf(Style {
                 position: Position::Fixed,
@@ -287,7 +287,7 @@ mod oof_hoisting {
     /// the skipped subtree.
     #[test]
     fn hoisting_survives_cache_hits() {
-        let mut tree: TaffyTree<()> = TaffyTree::new();
+        let mut tree: TakiaTree<()> = TakiaTree::new();
         let abs = tree
             .new_leaf(Style {
                 position: Position::Absolute,
@@ -335,7 +335,7 @@ mod oof_hoisting {
     /// re-add fixed boxes to the root's (still valid) hoisted-children list.
     #[test]
     fn cached_root_does_not_duplicate_hoisted_children() {
-        let mut tree: TaffyTree<()> = TaffyTree::new();
+        let mut tree: TakiaTree<()> = TakiaTree::new();
         let fixed = tree
             .new_leaf(Style {
                 position: Position::Fixed,
@@ -361,7 +361,7 @@ mod oof_hoisting {
     /// rounded location is computed against the containing block's cumulative offset.
     #[test]
     fn rounding_uses_containing_block_offsets() {
-        let mut tree: TaffyTree<()> = TaffyTree::new();
+        let mut tree: TakiaTree<()> = TakiaTree::new();
         tree.enable_rounding();
         let abs = tree
             .new_leaf(Style {
@@ -402,7 +402,7 @@ mod oof_hoisting {
     /// becomes static again.
     #[test]
     fn claim_change_relayouts_with_hot_cache() {
-        let mut tree: TaffyTree<()> = TaffyTree::new();
+        let mut tree: TakiaTree<()> = TakiaTree::new();
         let abs = tree
             .new_leaf(Style {
                 position: Position::Absolute,
@@ -452,7 +452,7 @@ mod oof_hoisting {
     /// ancestor starts claiming fixed boxes (position change with a hot cache), and back.
     #[test]
     fn fixed_claim_change_relayouts_with_hot_cache() {
-        let mut tree: TaffyTree<()> = TaffyTree::new();
+        let mut tree: TakiaTree<()> = TakiaTree::new();
         let fixed = tree
             .new_leaf(Style {
                 position: Position::Fixed,
@@ -492,7 +492,7 @@ mod oof_hoisting {
     /// containing block even when unrelated siblings hit the cache.
     #[test]
     fn content_change_inside_hoisted_subtree() {
-        let mut tree: TaffyTree<()> = TaffyTree::new();
+        let mut tree: TakiaTree<()> = TakiaTree::new();
         let inner = tree.new_leaf(leaf_style(10.0, 10.0)).unwrap();
         let abs = tree
             .new_with_children(

@@ -214,7 +214,7 @@ impl WebDriver {
         forward_output(process.stdout.take().unwrap(), std::io::stdout());
         forward_output(process.stderr.take().unwrap(), std::io::stderr());
 
-        let profile_dir = std::env::temp_dir().join(format!("taffy-gentest-{}", std::process::id()));
+        let profile_dir = std::env::temp_dir().join(format!("takia-gentest-{}", std::process::id()));
         let mut webdriver = WebDriver { process, url: format!("http://127.0.0.1:{port}"), profile_dir };
         webdriver.wait_until_listening(port)?;
         Ok(webdriver)

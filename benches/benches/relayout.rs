@@ -2,8 +2,8 @@
 //! (unlike the other benchmarks, which lay out freshly built trees with empty caches).
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use std::hint::black_box;
-use taffy::prelude::*;
-use taffy::{Cache, LayoutInput, LayoutOutput, Line, RequestedAxis, RunMode, SizingMode};
+use takia::prelude::*;
+use takia::{Cache, LayoutInput, LayoutOutput, Line, RequestedAxis, RunMode, SizingMode};
 
 /// The layout modes that the containers of a benchmark tree cycle through, by depth
 #[derive(Clone, Copy)]
@@ -33,7 +33,7 @@ fn container_style(display: Display, depth: usize) -> Style {
 /// Builds a tree of auto-sized containers with `fanout` children each and fixed-size leaves at `depth`.
 /// Returns the first leaf.
 fn build_subtree(
-    taffy: &mut TaffyTree,
+    takia: &mut TakiaTree,
     containers: Containers,
     fanout: usize,
     depth: usize,
@@ -41,24 +41,24 @@ fn build_subtree(
     first_leaf: &mut Option<NodeId>,
 ) -> NodeId {
     if depth == max_depth {
-        let leaf = taffy.new_leaf(leaf_style(10.0)).unwrap();
+        let leaf = takia.new_leaf(leaf_style(10.0)).unwrap();
         first_leaf.get_or_insert(leaf);
         return leaf;
     }
     let children: Vec<_> =
-        (0..fanout).map(|_| build_subtree(taffy, containers, fanout, depth + 1, max_depth, first_leaf)).collect();
+        (0..fanout).map(|_| build_subtree(takia, containers, fanout, depth + 1, max_depth, first_leaf)).collect();
     let display = containers.1[depth % containers.1.len()];
-    taffy.new_with_children(container_style(display, depth), &children).unwrap()
+    takia.new_with_children(container_style(display, depth), &children).unwrap()
 }
 
-fn build_tree(containers: Containers, fanout: usize, max_depth: usize) -> (TaffyTree, NodeId, NodeId) {
-    let mut taffy = TaffyTree::new();
+fn build_tree(containers: Containers, fanout: usize, max_depth: usize) -> (TakiaTree, NodeId, NodeId) {
+    let mut takia = TakiaTree::new();
     // Rounding visits every node of the tree on every layout, which would dominate these benchmarks
-    taffy.disable_rounding();
+    takia.disable_rounding();
     let mut first_leaf = None;
-    let root = build_subtree(&mut taffy, containers, fanout, 0, max_depth, &mut first_leaf);
-    taffy.compute_layout(root, Size { width: length(2000.0), height: max_content() }).unwrap();
-    (taffy, root, first_leaf.unwrap())
+    let root = build_subtree(&mut takia, containers, fanout, 0, max_depth, &mut first_leaf);
+    takia.compute_layout(root, Size { width: length(2000.0), height: max_content() }).unwrap();
+    (takia, root, first_leaf.unwrap())
 }
 
 /// Lay out a tree, then repeatedly resize one leaf and lay the tree out again. Each ancestor of the
@@ -67,14 +67,14 @@ fn relayout_benchmarks(c: &mut Criterion) {
     for (shape, fanout, depth) in [("wide", 100, 2), ("balanced", 10, 4), ("deep", 2, 12)] {
         let mut group = c.benchmark_group(format!("relayout/{shape}"));
         for containers in CONTAINERS {
-            let (mut taffy, root, leaf) = build_tree(containers, fanout, depth);
-            let node_count = taffy.total_node_count();
+            let (mut takia, root, leaf) = build_tree(containers, fanout, depth);
+            let node_count = takia.total_node_count();
             let mut tall = false;
             group.bench_function(BenchmarkId::new(containers.0, node_count), |b| {
                 b.iter(|| {
                     tall = !tall;
-                    taffy.set_style(leaf, leaf_style(if tall { 20.0 } else { 10.0 })).unwrap();
-                    taffy.compute_layout(root, Size { width: length(2000.0), height: max_content() }).unwrap();
+                    takia.set_style(leaf, leaf_style(if tall { 20.0 } else { 10.0 })).unwrap();
+                    takia.compute_layout(root, Size { width: length(2000.0), height: max_content() }).unwrap();
                 })
             });
         }
@@ -85,14 +85,14 @@ fn relayout_benchmarks(c: &mut Criterion) {
     // laid out again and every node whose inputs did not change is answered from its cache.
     let mut group = c.benchmark_group("relayout/resize");
     for containers in CONTAINERS {
-        let (mut taffy, root, _) = build_tree(containers, 10, 4);
-        let node_count = taffy.total_node_count();
+        let (mut takia, root, _) = build_tree(containers, 10, 4);
+        let node_count = takia.total_node_count();
         let mut wide = false;
         group.bench_function(BenchmarkId::new(containers.0, node_count), |b| {
             b.iter(|| {
                 wide = !wide;
                 let width = if wide { 2500.0 } else { 2000.0 };
-                taffy.compute_layout(root, Size { width: length(width), height: max_content() }).unwrap();
+                takia.compute_layout(root, Size { width: length(width), height: max_content() }).unwrap();
             })
         });
     }
@@ -178,7 +178,7 @@ fn cache_benchmarks(c: &mut Criterion) {
 // nanoseconds. Samples are cheap to collect, so we take more of them than the other benchmarks do.
 criterion_group!(
     name = benches;
-    config = taffy_benchmarks::criterion_config().sample_size(50);
+    config = takia_benchmarks::criterion_config().sample_size(50);
     targets = relayout_benchmarks, cache_benchmarks
 );
 criterion_main!(benches);

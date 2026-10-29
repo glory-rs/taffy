@@ -2,11 +2,11 @@
 // of false positives for this lint. So let's just disable it for this code.
 #![allow(dead_code)]
 
-pub mod taffy_helpers;
-pub use taffy_helpers::TaffyTreeBuilder;
+pub mod takia_helpers;
+pub use takia_helpers::TakiaTreeBuilder;
 
-#[cfg(feature = "taffy03")]
-pub mod taffy_03_helpers;
+#[cfg(feature = "takia03")]
+pub mod takia_03_helpers;
 
 #[cfg(feature = "yoga")]
 pub mod yoga_helpers;
@@ -19,8 +19,8 @@ use rand::distr::uniform::SampleRange;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use std::time::{Duration, Instant};
-use taffy::style::Style as TaffyStyle;
-use taffy::{NodeId, TaffyTree};
+use takia::style::Style as TakiaStyle;
+use takia::{NodeId, TakiaTree};
 
 pub const STANDARD_RNG_SEED: u64 = 12345;
 
@@ -76,15 +76,15 @@ pub fn bench_layout<T>(
     })
 }
 
-/// A [`TaffyTree`] along with what is needed to lay it out from scratch repeatedly
-pub struct TaffyLayoutTree<NodeContext = ()> {
-    pub tree: TaffyTree<NodeContext>,
+/// A [`TakiaTree`] along with what is needed to lay it out from scratch repeatedly
+pub struct TakiaLayoutTree<NodeContext = ()> {
+    pub tree: TakiaTree<NodeContext>,
     pub root: NodeId,
     nodes: Vec<NodeId>,
 }
 
-impl<NodeContext> TaffyLayoutTree<NodeContext> {
-    pub fn new((tree, root): (TaffyTree<NodeContext>, NodeId)) -> Self {
+impl<NodeContext> TakiaLayoutTree<NodeContext> {
+    pub fn new((tree, root): (TakiaTree<NodeContext>, NodeId)) -> Self {
         let mut nodes = vec![root];
         let mut next = 0;
         while let Some(&node) = nodes.get(next) {
@@ -111,17 +111,17 @@ pub trait GenStyle<Style: Default>: Clone {
 }
 
 #[derive(Clone)]
-pub struct FixedStyleGenerator(pub TaffyStyle);
-impl GenStyle<TaffyStyle> for FixedStyleGenerator {
-    fn create_leaf_style(&mut self, _rng: &mut impl Rng) -> TaffyStyle {
+pub struct FixedStyleGenerator(pub TakiaStyle);
+impl GenStyle<TakiaStyle> for FixedStyleGenerator {
+    fn create_leaf_style(&mut self, _rng: &mut impl Rng) -> TakiaStyle {
         self.0.clone()
     }
-    fn create_container_style(&mut self, _rng: &mut impl Rng) -> TaffyStyle {
+    fn create_container_style(&mut self, _rng: &mut impl Rng) -> TakiaStyle {
         self.0.clone()
     }
 }
 
-pub trait BuildTree<R: Rng, G: GenStyle<TaffyStyle>> {
+pub trait BuildTree<R: Rng, G: GenStyle<TakiaStyle>> {
     const NAME: &'static str;
     type Tree;
     type Node: Clone;
@@ -161,7 +161,7 @@ pub trait BuildTree<R: Rng, G: GenStyle<TaffyStyle>> {
     }
 }
 
-pub trait BuildTreeExt<G: GenStyle<TaffyStyle>>: BuildTree<ChaCha8Rng, G> {
+pub trait BuildTreeExt<G: GenStyle<TakiaStyle>>: BuildTree<ChaCha8Rng, G> {
     fn with_seed(seed: u64, style_generator: G) -> Self
     where
         Self: Sized,

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod flex_line_count {
-    use taffy::prelude::*;
-    use taffy_test_helpers::{new_test_tree, test_measure_function, TestNodeContext, WritingMode};
+    use takia::prelude::*;
+    use takia_test_helpers::{new_test_tree, test_measure_function, TestNodeContext, WritingMode};
 
     const TEXT: &str = "HHHHHHHHHH\u{200B}HHHHHHHHHH\u{200B}HHHHHHHHHH";
 
@@ -20,12 +20,12 @@ mod flex_line_count {
     }
 
     fn measure_text_child(flex_wrap: FlexWrap) -> Size<f32> {
-        let mut taffy = new_test_tree();
+        let mut takia = new_test_tree();
         let text = TestNodeContext::ahem_text(TEXT.to_string(), WritingMode::Horizontal);
-        let child = taffy.new_leaf_with_context(Style::default(), text).unwrap();
-        let container = taffy.new_with_children(container_style(flex_wrap), &[child]).unwrap();
-        taffy.compute_layout_with_measure(container, Size::MAX_CONTENT, test_measure_function).unwrap();
-        taffy.layout(child).unwrap().size
+        let child = takia.new_leaf_with_context(Style::default(), text).unwrap();
+        let container = takia.new_with_children(container_style(flex_wrap), &[child]).unwrap();
+        takia.compute_layout_with_measure(container, Size::MAX_CONTENT, test_measure_function).unwrap();
+        takia.layout(child).unwrap().size
     }
 
     // A multi-line container with `flex-line-count: 2` measures content against the cross-axis
@@ -48,14 +48,14 @@ mod flex_line_count {
     }
 
     fn measure_fit_content_child(flex_wrap: FlexWrap) -> Size<f32> {
-        let mut taffy = new_test_tree();
+        let mut takia = new_test_tree();
         let text = TestNodeContext::ahem_text(TEXT.to_string(), WritingMode::Horizontal);
         let child_style =
             Style { size: Size { width: Dimension::fit_content(), height: auto() }, ..Default::default() };
-        let child = taffy.new_leaf_with_context(child_style, text).unwrap();
-        let container = taffy.new_with_children(container_style(flex_wrap), &[child]).unwrap();
-        taffy.compute_layout_with_measure(container, Size::MAX_CONTENT, test_measure_function).unwrap();
-        taffy.layout(child).unwrap().size
+        let child = takia.new_leaf_with_context(child_style, text).unwrap();
+        let container = takia.new_with_children(container_style(flex_wrap), &[child]).unwrap();
+        takia.compute_layout_with_measure(container, Size::MAX_CONTENT, test_measure_function).unwrap();
+        takia.layout(child).unwrap().size
     }
 
     // A bare `fit-content` cross size is also measured against the divided cross-axis

@@ -15,7 +15,7 @@ fn verify(grow: bool) {
     for row in [true, false] {
         for gap in [0.0, 10.0, 25.0] {
             for factors in sets {
-                let mut tree: TaffyTree<()> = TaffyTree::new();
+                let mut tree: TakiaTree<()> = TakiaTree::new();
                 tree.disable_rounding();
                 let main = if row { 300.0 } else { 200.0 };
                 let base = if grow {
