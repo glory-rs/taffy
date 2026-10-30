@@ -4,9 +4,11 @@ version = "0.1.0"
 authors = ["Nico Burns"]
 edition = "2021"
 
+rust-version = "1.95"
+
 [dependencies]
-ureq = { version = "3.3.0", default-features = false, features = ["rustls"] }
-zip = { version = "9.0.1", default-features = false, features = ["deflate"] }
-env_logger = "0.11.10"
-log = "0.4"
-serde_json = "1"
+ureq = { version = "3.5.0", default-features = false, features = ["rustls"] }
+zip = { version = "9.1.3", default-features = false, features = ["deflate"] }
+env_logger = "0.11.11"
+log = "0.4.34"
+serde_json = "1.0.154"

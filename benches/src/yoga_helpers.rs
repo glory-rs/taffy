@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use rand::distr::uniform::SampleRange;
-use rand::Rng;
+use rand::{Rng, RngExt};
 use rand_chacha::ChaCha8Rng;
 use slotmap::{DefaultKey, SlotMap};
 
@@ -157,7 +157,7 @@ fn into_pixels(dim: impl Into<tf::Dimension>) -> f32 {
 }
 
 fn items_into_align(align: tf::AlignSelf) -> yg::Align {
-    // Yoga has no safe/unsafe overflow-position concept — drop the safety field and dispatch
+    // Yoga has no safe/unsafe overflow-position concept â€” drop the safety field and dispatch
     // on the bare keyword. Safe and unsafe alike fold to the same yoga keyword.
     match align.keyword {
         tf::AlignItemsKeyword::Normal => yg::Align::Auto,

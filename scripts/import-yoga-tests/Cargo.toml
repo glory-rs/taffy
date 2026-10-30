@@ -4,5 +4,7 @@ version = "0.1.0"
 authors = ["Nico Burns"]
 edition = "2021"
 
+rust-version = "1.95"
+
 [dependencies]
-walkdir = "2.3.3"
+walkdir = "2.5.0"

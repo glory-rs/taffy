@@ -8,9 +8,11 @@
 /.chrome-for-testing
 
 **/*.rs.bk
-Cargo.lock
 .DS_Store
 
 .vscode
 
 *-test-names.txt
+
+# Library, example and benchmark resolutions are generated locally.
+**/Cargo.lock

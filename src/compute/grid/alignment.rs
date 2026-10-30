@@ -59,7 +59,7 @@ pub(super) fn align_tracks(
     let mut seen_non_collapsed_track = false;
     let mut position_track = |i: usize, track: &mut GridTrack| {
         // Odd tracks are gutters (but slices are zero-indexed, so odd tracks have even indices)
-        let is_gutter = i % 2 == 0;
+        let is_gutter = i.is_multiple_of(2);
         let is_non_collapsed_track = !is_gutter && !track.is_collapsed;
 
         // Alignment offsets should be applied only to non-collapsed tracks.

@@ -37,13 +37,13 @@ impl FromLength for AvailableSpace {
 
 #[cfg(feature = "parse")]
 impl FromCss for AvailableSpace {
-    fn from_css<'i>(parser: &mut Parser<'i, '_>) -> CssParseResult<'i, Self> {
+    fn from_css<'i>(parser: &mut Parser<'i>) -> CssParseResult<'i, Self> {
         match parser.next()?.clone() {
             Token::Number { value, .. } if value >= 0.0 => Ok(Self::Definite(value)),
             Token::Dimension { value, .. } if value >= 0.0 => Ok(Self::Definite(value)),
             Token::Ident(ident) if ident == "max-content" => Ok(Self::MaxContent),
             Token::Ident(ident) if ident == "min-content" => Ok(Self::MinContent),
-            token => Err(parser.new_unexpected_token_error(token))?,
+            _token => Err(cssparser::ParseError::unexpected_token())?,
         }
     }
 }

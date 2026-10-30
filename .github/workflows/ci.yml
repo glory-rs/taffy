@@ -34,9 +34,11 @@ jobs:
       - name: Prepare compiler and storage
         run: |
           New-Item -ItemType Directory -Force $env:CARGO_HOME,$env:CARGO_TARGET_DIR,$env:RUSTUP_HOME,$env:TEMP | Out-Null
-          rustup toolchain install 1.98.0 --profile minimal --component rustfmt,clippy
+          rustup toolchain install 1.95.0 --profile minimal --component rustfmt,clippy
           if ($LASTEXITCODE) { throw 'Toolchain installation failed' }
-          rustup default 1.98.0
+          rustup default 1.95.0
+          python scripts/library_lockfiles.py
+          if ($LASTEXITCODE) { throw 'Library dependency resolution failed' }
       - name: Validate source and release plan
         run: |
           python scripts/release.py

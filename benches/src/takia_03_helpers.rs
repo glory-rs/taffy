@@ -1,5 +1,5 @@
 use rand::distr::uniform::SampleRange;
-use rand::Rng;
+use rand::{Rng, RngExt};
 use rand_chacha::ChaCha8Rng;
 use takia::style::Style as TakiaStyle;
 use takia_03::prelude::LayoutTree as _;

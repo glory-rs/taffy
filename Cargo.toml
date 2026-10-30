@@ -1,13 +1,13 @@
 [package]
 name = "takia"
-version = "0.15.0"
+version = "0.15.1"
 authors = [
     "Alice Cecile <alice.i.cecile@gmail.com>",
     "Johnathan Kelley <jkelleyrtp@gmail.com>",
     "Nico Burns <nico@nicoburns.com>",
 ]
 edition = "2021"
-rust-version = "1.71"
+rust-version = "1.95"
 include = ["src/**/*", "examples/**/*", "Cargo.toml", "README.md", "LICENSE*", "UPSTREAM.md", "RELEASING.md"]
 description = "Glory-maintained Taffy fork with corrected fractional flex gap layout"
 repository = "https://github.com/glory-rs/takia"
@@ -16,11 +16,11 @@ categories = ["gui"]
 license = "MIT"
 
 [dependencies]
-document-features = { version = "0.2.7", optional = true }
-serde = { version = "1.0", default-features = false, optional = true, features = ["serde_derive"] }
-slotmap = { version = "1.0.6", default-features = false, optional = true }
-smallvec = { version = "1.13", default-features = false, optional = true }
-cssparser = { version = "0.37.0", default-features = false, optional = true }
+document-features = { version = "0.2.12", optional = true }
+serde = { version = "1.0.229", default-features = false, optional = true, features = ["serde_derive"] }
+slotmap = { version = "1.1.1", default-features = false, optional = true }
+smallvec = { version = "1.16.4", default-features = false, optional = true }
+cssparser = { version = "0.38.0", default-features = false, optional = true }
 
 [package.metadata.docs.rs]
 # To test all the documentation related features, run:
@@ -90,8 +90,8 @@ debug = ["std"]
 profile = ["std"]
 
 [dev-dependencies]
-serde_json = "1.0.93"
-roxmltree = "0.21.1"
+serde_json = "1.0.154"
+roxmltree = "0.21.2"
 takia_test_helpers = { path = "tests/common"}
 
 # Enable default features for tests and examples
@@ -112,6 +112,7 @@ name = "basic"
 doc-scrape-examples = true
 
 [workspace]
+resolver = "3"
 members = [
     "scripts/gentest",
     "scripts/getchrome",
@@ -119,6 +120,5 @@ members = [
     "scripts/import-yoga-tests",
     "tests/common",
 ]
-# The Parley example and benches are excluded from the workspace as their dependencies require a newer
-# Rust version than Takia's MSRV
+# Keep the Parley example and comparison benches as independent workspaces.
 exclude = ["examples/parley", "benches"]

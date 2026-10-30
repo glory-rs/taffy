@@ -4,12 +4,14 @@ version = "0.1.0"
 authors = ["Emil Sjölander <emil@visly.app>"]
 edition = "2018"
 
+rust-version = "1.95"
+
 [dependencies]
-env_logger = "0.11.10"
-fantoccini = "0.22.0"
+env_logger = "0.11.11"
+fantoccini = "0.22.1"
 getchrome = { path = "../getchrome" }
-log = "0.4"
-serde_json = "1"
-tokio = { version = "1.18", features = ["full"] }
-walkdir = "2.3.3"
-xmlwriter = "0.1"
+log = "0.4.34"
+serde_json = "1.0.154"
+tokio = { version = "1.54.1", features = ["full"] }
+walkdir = "2.5.0"
+xmlwriter = "0.1.0"
