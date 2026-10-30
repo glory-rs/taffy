@@ -9,6 +9,8 @@ use takia_benchmarks::{
     bench_layout, benchmark_group, BuildTree, BuildTreeExt, FixedStyleGenerator, GenStyle, TakiaTreeBuilder,
 };
 
+#[cfg(feature = "cephal")]
+use takia_benchmarks::cephal_helpers::CephalTreeBuilder;
 #[cfg(feature = "takia03")]
 use takia_benchmarks::takia_03_helpers::Takia03TreeBuilder;
 #[cfg(feature = "yoga")]
@@ -90,6 +92,8 @@ macro_rules! run_benchmark {
 
 macro_rules! benchmark_each_library {
     ($benchmark_name: expr, $group: ident, $builder: ident, $params: expr, $generate_style: expr, $generate_tree: expr) => {
+        #[cfg(feature = "cephal")]
+        run_benchmark!(CephalTreeBuilder<_, _>, "cephal", $benchmark_name, $group, $builder, $params, $generate_style, $generate_tree);
         #[cfg(feature = "yoga")]
         run_benchmark!(YogaTreeBuilder<_, _>, "Yoga", $benchmark_name, $group, $builder, $params, $generate_style, $generate_tree);
         #[cfg(feature = "takia03")]
@@ -254,6 +258,17 @@ fn super_deep_benchmarks(c: &mut Criterion) {
         run_benchmark!(
             Takia03TreeBuilder<_,_>,
             "Takia 0.3",
+            "",
+            group,
+            builder,
+            depth,
+            || SuperDeepStyleGen,
+            builder.build_super_deep_hierarchy(*depth, 3)
+        );
+        #[cfg(feature = "cephal")]
+        run_benchmark!(
+            CephalTreeBuilder<_,_>,
+            "cephal",
             "",
             group,
             builder,

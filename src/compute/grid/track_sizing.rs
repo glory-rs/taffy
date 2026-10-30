@@ -1,6 +1,7 @@
 //! Implements the track sizing algorithm
 //! <https://www.w3.org/TR/css-grid-1/#layout-algorithm>
 use super::types::{GridItem, GridTrack, TrackCounts};
+use crate::compute::common::alignment::child_first_baseline;
 use crate::geometry::{AbstractAxis, Line, Size};
 use crate::style::{AlignContent, AlignContentKeyword, AvailableSpace};
 use crate::style_helpers::TakiaMinContent;
@@ -508,35 +509,31 @@ fn resolve_item_baselines(
                 Line::FALSE,
             );
 
-            let baseline = measured_size_and_baselines.baselines.first;
             let height = measured_size_and_baselines.size.height;
+            let baseline = child_first_baseline(measured_size_and_baselines.baselines.first, height, item.overflow.y)
+                .unwrap_or(height);
 
-            // Scroll containers' baselines are determined from their content as if scrolled to the
-            // initial position, but are additionally clamped to their border box.
-            // See https://github.com/w3c/csswg-drafts/issues/7660
-            let baseline = if item.overflow.y.is_scroll_container() {
-                baseline.unwrap_or(height).min(height).max(0.0)
-            } else {
-                baseline.unwrap_or(height)
-            };
-
-            item.baseline = Some(
-                baseline + item.margin.top.resolve_or_zero(inner_node_size.width, |val, basis| tree.calc(val, basis)),
-            );
+            item.baseline = Some(baseline);
         }
+
+        // Items are aligned by the distance from the top of their margin box to their baseline
+        let margin_box_baseline = |item: &GridItem| {
+            item.baseline.unwrap_or(0.0)
+                + item.margin.top.resolve_or_zero(inner_node_size.width, |val, basis| tree.calc(val, basis))
+        };
 
         // Compute the max baseline of all items in the row participating in baseline alignment
         let row_max_baseline = row_items
             .iter()
             .filter(|item| item.participates_in_baseline_alignment())
-            .map(|item| item.baseline.unwrap_or(0.0))
+            .map(|item| margin_box_baseline(item))
             .max_by(|a, b| a.total_cmp(b))
             .unwrap();
 
         // Compute the baseline shim for each item in the row participating in baseline alignment
         for item in row_items.iter_mut() {
             if item.participates_in_baseline_alignment() {
-                item.baseline_shim = row_max_baseline - item.baseline.unwrap_or(0.0);
+                item.baseline_shim = row_max_baseline - margin_box_baseline(item);
                 item.known_dimensions_cache = None;
             }
         }

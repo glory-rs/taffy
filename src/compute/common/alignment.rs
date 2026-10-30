@@ -1,5 +1,21 @@
 //! Generic CSS alignment code that is shared between both the Flexbox and CSS Grid algorithms.
-use crate::style::{AlignContent, AlignContentKeyword, AlignItems, AlignItemsKeyword, AlignmentSafety};
+use crate::style::{AlignContent, AlignContentKeyword, AlignItems, AlignItemsKeyword, AlignmentSafety, Overflow};
+
+/// The first baseline of a child box (measured from the top of its border box, like [`crate::Baselines`]) as used
+/// for baseline alignment and for determining its container's baseline, given the baseline it reported, its
+/// border-box height, and its vertical `overflow`.
+///
+/// Scroll containers' baselines are determined from their content as if scrolled to the initial position, but are
+/// additionally clamped to their border box. A scroll container with no baseline synthesizes one from its border-box
+/// bottom edge. See <https://github.com/w3c/csswg-drafts/issues/7660>
+#[inline]
+pub(crate) fn child_first_baseline(first_baseline: Option<f32>, height: f32, overflow_y: Overflow) -> Option<f32> {
+    if overflow_y.is_scroll_container() {
+        Some(first_baseline.unwrap_or(height).min(height).max(0.0))
+    } else {
+        first_baseline
+    }
+}
 
 /// Resolve the `safe`/`unsafe` overflow-position fallback for a self-level alignment value
 /// (used by `align-self` / `justify-self`-style sites and by absolutely-positioned items in
@@ -41,12 +57,14 @@ pub(crate) fn apply_alignment_fallback(
     let mut is_safe = matches!(alignment_mode.safety, AlignmentSafety::Safe);
 
     // 1. If there is only a single item being aligned or the items overflow the container, the
-    //    distributed alignment keywords (`stretch`, `space-*`) fall back to a positional keyword
-    //    and gain implicit `safe` semantics so step 2 can flip them to `Start` on overflow.
+    //    distributed alignment keywords (`stretch`, `space-*`) fall back to a positional keyword.
+    //    The `space-*` fallbacks gain implicit `safe` semantics so step 2 can flip them to `Start`
+    //    on overflow, whereas `stretch` falls back to plain `flex-start`.
     //    https://www.w3.org/TR/css-align-3/#distribution-values
     if num_items <= 1 || free_space <= 0.0 {
         (keyword, is_safe) = match keyword {
-            AlignContentKeyword::Stretch | AlignContentKeyword::SpaceBetween => (AlignContentKeyword::FlexStart, true),
+            AlignContentKeyword::Stretch => (AlignContentKeyword::FlexStart, is_safe),
+            AlignContentKeyword::SpaceBetween => (AlignContentKeyword::FlexStart, true),
             AlignContentKeyword::SpaceAround | AlignContentKeyword::SpaceEvenly => (AlignContentKeyword::Center, true),
             other => (other, is_safe),
         };

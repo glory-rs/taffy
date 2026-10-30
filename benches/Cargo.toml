@@ -7,7 +7,7 @@ authors = [
 ]
 edition = "2021"
 description = "Benchmarks for the takia crate"
-repository = "https://github.com/DioxusLabs/taffy"
+repository = "https://github.com/DioxusLabs/takia"
 keywords = ["cross-platform", "layout", "benchmarks"]
 categories = ["gui", "benchmarks"]
 license = "MIT"
@@ -17,16 +17,22 @@ criterion = "0.7"
 rand = { version = "0.9" }
 rand_chacha = "0.9"
 takia = { path = ".." }
-takia_03 = { package = "takia", version = "0.3", optional = true }
+takia_03 = { package = "taffy", version = "0.3", optional = true }
 yoga = { version = "0.5.0", optional = true }
 ordered-float = { version = "4", optional = true }
 slotmap = { version = "1.0.6", optional = true }
+morphorm = { version = "0.9.0", optional = true }
+torin = { version = "=0.5.0-rc.10", optional = true }
+cephal = { version = "0.2", optional = true }
 parley = "0.11.1"
 
 [features]
 yoga = ["dep:yoga", "dep:slotmap", "dep:ordered-float"]
 yoga-super-deep = ["yoga"]
 takia03 = ["dep:takia_03"]
+morphorm = ["dep:morphorm"]
+torin = ["dep:torin"]
+cephal = ["dep:cephal"]
 content_size = ["takia/content_size"]
 strict_provenance = ["takia/strict_provenance"]
 small = []
@@ -61,4 +67,9 @@ harness = false
 [[bench]]
 name = "relayout"
 path = "benches/relayout.rs"
+harness = false
+
+[[bench]]
+name = "pangui"
+path = "benches/pangui.rs"
 harness = false

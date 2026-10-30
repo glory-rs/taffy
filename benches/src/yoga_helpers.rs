@@ -72,6 +72,10 @@ impl<R: Rng, G: GenStyle<TakiaStyle>> BuildTree<R, G> for YogaTreeBuilder<R, G> 
         create_yg_node(&mut self.tree, &style, &children)
     }
 
+    fn create_node_with_style(&mut self, style: TakiaStyle, children: &[Self::Node]) -> Self::Node {
+        create_yg_node(&mut self.tree, &style, children)
+    }
+
     fn set_root_children(&mut self, children: &[Self::Node]) {
         set_node_children(&mut self.tree, self.root, &children);
     }
@@ -143,7 +147,7 @@ fn into_yg_units(dim: impl Into<tf::Dimension>) -> yg::StyleUnit {
     match dim.into_raw().tag() {
         tf::CompactLength::AUTO_TAG => yg::StyleUnit::Auto,
         tf::CompactLength::LENGTH_TAG => yg::StyleUnit::Point(yg::OrderedFloat(val)),
-        tf::CompactLength::PERCENT_TAG => yg::StyleUnit::Percent(yg::OrderedFloat(val)),
+        tf::CompactLength::PERCENT_TAG => yg::StyleUnit::Percent(yg::OrderedFloat(val * 100.0)),
         _ => unreachable!(),
     }
 }

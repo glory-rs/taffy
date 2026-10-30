@@ -8,19 +8,19 @@ use super::{BuildTree, BuildTreeExt, GenStyle};
 pub struct Takia03TreeBuilder<R: Rng, G: GenStyle<TakiaStyle>> {
     rng: R,
     style_generator: G,
-    tree: takia_03::Takia,
+    tree: takia_03::Taffy,
     root: takia_03::prelude::Node,
     nodes: Vec<takia_03::prelude::Node>,
 }
 
 // Implement the BuildTree trait
 impl<R: Rng, G: GenStyle<TakiaStyle>> BuildTree<R, G> for Takia03TreeBuilder<R, G> {
-    const NAME: &'static str = "Takia 0.3";
-    type Tree = takia_03::Takia;
+    const NAME: &'static str = "Taffy 0.3";
+    type Tree = takia_03::Taffy;
     type Node = takia_03::prelude::Node;
 
     fn with_rng(mut rng: R, mut style_generator: G) -> Self {
-        let mut tree = takia_03::Takia::new();
+        let mut tree = takia_03::Taffy::new();
         let root = tree.new_leaf(convert_style(style_generator.create_root_style(&mut rng))).unwrap();
         Takia03TreeBuilder { rng, style_generator, tree, root, nodes: vec![root] }
     }
@@ -50,6 +50,12 @@ impl<R: Rng, G: GenStyle<TakiaStyle>> BuildTree<R, G> for Takia03TreeBuilder<R, 
 
     fn create_container_node(&mut self, children: &[Self::Node]) -> Self::Node {
         let style = self.style_generator.create_container_style(&mut self.rng);
+        let node = self.tree.new_with_children(convert_style(style), children).unwrap();
+        self.nodes.push(node);
+        node
+    }
+
+    fn create_node_with_style(&mut self, style: TakiaStyle, children: &[Self::Node]) -> Self::Node {
         let node = self.tree.new_with_children(convert_style(style), children).unwrap();
         self.nodes.push(node);
         node

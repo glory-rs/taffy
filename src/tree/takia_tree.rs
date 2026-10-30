@@ -97,7 +97,7 @@ struct NodeData {
     pub(crate) style: Style,
 
     /// The always unrounded results of the layout computation. We must store this separately from the rounded
-    /// layout to avoid errors from rounding already-rounded values. See <https://github.com/DioxusLabs/taffy/issues/501>.
+    /// layout to avoid errors from rounding already-rounded values. See <https://github.com/DioxusLabs/takia/issues/501>.
     pub(crate) unrounded_layout: Layout,
 
     /// The final results of the layout computation.
@@ -294,6 +294,10 @@ where
         // and thus that we should lay out this node using hidden layout regardless of it's own display style.
         if inputs.run_mode == RunMode::PerformHiddenLayout {
             debug_log!("HIDDEN");
+            // `round_layout` reaches out-of-flow boxes only through their containing block's
+            // hoisted child list, and a box inside a hidden subtree is in no such list. Write the
+            // final layout here so that it does not keep the layout from an earlier visible pass.
+            self.takia.nodes[node_id.into()].final_layout = Layout::with_order(0);
             return compute_hidden_layout(self, node_id);
         }
 
@@ -1129,7 +1133,7 @@ mod tests {
         takia.remove(parent).unwrap();
     }
 
-    // Related to: https://github.com/DioxusLabs/taffy/issues/998
+    // Related to: https://github.com/DioxusLabs/takia/issues/998
     #[test]
     fn remove_node_marks_parent_dirty() {
         use crate::prelude::*;
@@ -1298,7 +1302,7 @@ mod tests {
         }
     }
 
-    // Related to: https://github.com/DioxusLabs/taffy/issues/510
+    // Related to: https://github.com/DioxusLabs/takia/issues/510
     #[test]
     fn remove_child_updates_parents() {
         let mut takia: TakiaTree<()> = TakiaTree::new();

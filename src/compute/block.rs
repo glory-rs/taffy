@@ -76,6 +76,17 @@ impl BlockFormattingContext {
     }
 }
 
+/// A mark of how many floats a Block Formatting Context held when it was taken.
+/// See [`BlockContext::float_mark`].
+#[cfg(feature = "float_layout")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FloatMark {
+    /// The number of left floats
+    left: usize,
+    /// The number of right floats
+    right: usize,
+}
+
 /// Context for each individual Block within a Block Formatting Context
 ///
 /// Contains a mutable reference to the BlockFormattingContext + block-specific data
@@ -163,9 +174,10 @@ impl BlockContext<'_> {
         self.bfc.float_context.has_active_floats(min_y + self.y_offset)
     }
 
-    /// Position a floated box with the context
+    /// Position a floated box with the context. `id` identifies the box in [`Self::floats_placed_since`].
     pub fn place_floated_box(
         &mut self,
+        id: u64,
         floated_box: Size<f32>,
         min_y: f32,
         direction: FloatDirection,
@@ -176,6 +188,7 @@ impl BlockContext<'_> {
             self.adjoining_floats[direction as usize] = true;
         }
         let mut pos = self.bfc.float_context.place_floated_box(
+            id,
             floated_box,
             min_y + self.y_offset,
             self.content_box_insets,
@@ -188,6 +201,25 @@ impl BlockContext<'_> {
         self.float_content_contribution = self.float_content_contribution.max(pos.y + floated_box.height);
 
         pos
+    }
+
+    /// A mark of the floats placed in the Block Formatting Context so far, for [`Self::floats_placed_since`]
+    pub fn float_mark(&self) -> FloatMark {
+        let float_context = &self.bfc.float_context;
+        FloatMark { left: float_context.left_floats().len(), right: float_context.right_floats().len() }
+    }
+
+    /// The id and position of each floated box placed since `mark` was taken: left floats in the
+    /// order they were placed, then right floats. Positions are relative to this block, as
+    /// returned by [`Self::place_floated_box`].
+    pub fn floats_placed_since(&self, mark: FloatMark) -> impl Iterator<Item = (u64, Point<f32>)> + '_ {
+        let float_context = &self.bfc.float_context;
+        let left = float_context.left_floats()[mark.left..].iter().map(|placed| (placed, FloatDirection::Left));
+        let right = float_context.right_floats()[mark.right..].iter().map(|placed| (placed, FloatDirection::Right));
+        left.chain(right).map(move |(placed, direction)| {
+            let pos = float_context.placed_position(placed, direction);
+            (placed.id, Point { x: pos.x - self.insets[0], y: pos.y - self.y_offset })
+        })
     }
 
     /// Search a space suitable for laying out non-floated content into
@@ -281,9 +313,11 @@ impl BlockContext<'_> {
     }
 }
 
-use super::common::alignment::{apply_alignment_fallback, compute_alignment_offset};
+use super::common::alignment::{apply_alignment_fallback, child_first_baseline, compute_alignment_offset};
 #[cfg(feature = "content_size")]
-use super::common::scrollable_overflow::compute_scrollable_overflow_contribution;
+use super::common::scrollable_overflow::{
+    compute_scrollable_overflow_contribution, finalize_scrollable_overflow, ScrollableOverflowContainer,
+};
 use super::common::sizing_keyword::{resolve_sizing_keyword, SizingKeywordResolution};
 
 /// Per-child data that is accumulated and modified over the course of the layout algorithm
@@ -647,6 +681,8 @@ fn compute_inner(
         content_box_inset,
         resolved_content_box_inset,
         resolved_border,
+        #[cfg(feature = "content_size")]
+        resolved_padding,
         text_align,
         justify_items,
         direction,
@@ -706,28 +742,27 @@ fn compute_inner(
             #[cfg(feature = "content_size")]
             {
                 inflow_overflow_rect = Rect::ZERO;
+                let overflow_container = ScrollableOverflowContainer {
+                    parent_is_scroll_container: is_scroll_container,
+                    parent_size: final_outer_size - resolved_border.sum_axes() - scrollbar_gutter.sum_axes(),
+                    reversed: Point { x: direction.is_rtl(), y: false },
+                    padding: resolved_padding,
+                };
                 for item in items.iter() {
                     if let Some(layout) = item.final_layout.as_ref() {
-                        let contribution_location = if direction.is_rtl() {
-                            Point {
-                                x: container_outer_width
-                                    - (layout.location.x + layout.size.width)
-                                    - resolved_border.right,
-                                y: layout.location.y - resolved_border.top,
-                            }
-                        } else {
-                            Point {
-                                x: layout.location.x - resolved_border.left,
-                                y: layout.location.y - resolved_border.top,
-                            }
+                        let contribution_location = Point {
+                            x: layout.location.x - resolved_border.left - scrollbar_gutter.left,
+                            y: layout.location.y - resolved_border.top,
                         };
                         inflow_overflow_rect = inflow_overflow_rect.union(compute_scrollable_overflow_contribution(
                             contribution_location,
                             layout.size,
-                            layout.scrollable_overflow_rect,
+                            layout.scrollable_overflow_rect.rect(),
+                            layout.border,
                             item.overflow,
                             item.contain,
-                            is_scroll_container,
+                            &overflow_container,
+                            layout.margin.map(|value| value.min(0.0)),
                         ));
                     }
                 }
@@ -754,7 +789,7 @@ fn compute_inner(
     let mut output = LayoutOutput {
         size: final_outer_size,
         #[cfg(feature = "content_size")]
-        scrollable_overflow_rect: Rect::ZERO,
+        scrollable_overflow_rect: crate::tree::ScrollableOverflow::ZERO,
         baselines: Baselines::from_first(first_baseline),
         top_margin: if own_margins_collapse_with_children.start {
             first_child_top_margin_set
@@ -838,15 +873,26 @@ fn compute_inner(
 
     #[cfg(feature = "content_size")]
     {
-        // A scroll container's own padding at the end of the content is part of its scrollable
-        // overflow region, so it is included in the in-flow overflow rect. Boxes that are not
-        // scroll containers do not extend their overflow region by their own padding.
-        if is_scroll_container {
-            inflow_overflow_rect.right +=
-                if direction.is_rtl() { resolved_padding.left } else { resolved_padding.right };
-            inflow_overflow_rect.bottom += resolved_padding.bottom;
+        let client_width =
+            (final_outer_size.width - resolved_border.horizontal_axis_sum() - scrollbar_gutter.horizontal_axis_sum())
+                .max(0.0);
+        if direction.is_rtl() {
+            inflow_overflow_rect = inflow_overflow_rect.union(Rect { right: client_width, ..Rect::ZERO });
         }
-        output.scrollable_overflow_rect = inflow_overflow_rect;
+        if is_scroll_container {
+            inflow_overflow_rect = inflow_overflow_rect.union(Rect {
+                left: if direction.is_rtl() { (client_width - resolved_padding.left).min(0.0) } else { 0.0 },
+                right: if direction.is_rtl() { client_width } else { resolved_padding.right },
+                top: 0.0,
+                bottom: resolved_padding.bottom,
+            });
+        }
+        output.scrollable_overflow_rect = finalize_scrollable_overflow(
+            inflow_overflow_rect,
+            final_outer_size - resolved_border.sum_axes() - scrollbar_gutter.sum_axes(),
+            Point { x: direction.is_rtl(), y: false },
+            is_scroll_container,
+        );
     }
 
     // 5. Perform hidden layout on hidden children
@@ -998,6 +1044,30 @@ fn resolve_stretch_height(
     Some(height)
 }
 
+/// Compute the offset applied to a box by its `inset` if it is `position: relative` (CSS2.2 9.4.3).
+///
+/// Percentages resolve against the containing block's content box (`parent_size`); a percentage
+/// that cannot be resolved behaves as `auto`. If both insets in an axis are non-auto, `top` wins
+/// over `bottom`, and `left` wins over `right` in LTR (`right` over `left` in RTL).
+#[inline]
+fn resolve_relative_offset(
+    item: &BlockItem,
+    parent_size: Size<Option<f32>>,
+    direction: Direction,
+    tree: &impl LayoutPartialTree,
+) -> Point<f32> {
+    if item.position != Position::Relative {
+        return Point::ZERO;
+    }
+    let inset = item.inset.zip_size(parent_size, |p, s| p.maybe_resolve(s, |val, basis| tree.calc(val, basis)));
+    let x = if direction.is_rtl() {
+        inset.right.map(|x| -x).or(inset.left)
+    } else {
+        inset.left.or(inset.right.map(|x| -x))
+    };
+    Point { x: x.unwrap_or(0.0), y: inset.top.or(inset.bottom.map(|x| -x)).unwrap_or(0.0) }
+}
+
 /// Compute the content-based width in the case that the width of the container is not known
 #[inline]
 fn determine_content_based_container_width(
@@ -1067,6 +1137,7 @@ fn perform_final_layout_on_in_flow_children(
     content_box_inset: Rect<f32>,
     resolved_content_box_inset: Rect<f32>,
     resolved_border: Rect<f32>,
+    #[cfg(feature = "content_size")] resolved_padding: Rect<f32>,
     text_align: TextAlign,
     justify_items: AlignItems,
     direction: Direction,
@@ -1077,6 +1148,13 @@ fn perform_final_layout_on_in_flow_children(
 ) -> (Rect<f32>, f32, CollapsibleMarginSet, CollapsibleMarginSet, Option<f32>) {
     // Resolve container_inner_width for sizing child nodes using initial content_box_inset
     let container_inner_width = (container_outer_width - resolved_content_box_inset.horizontal_axis_sum()).max(0.0);
+    #[cfg(feature = "content_size")]
+    let overflow_container = ScrollableOverflowContainer {
+        parent_is_scroll_container: is_scroll_container,
+        parent_size: Size { width: container_inner_width + resolved_padding.horizontal_axis_sum(), height: 0.0 },
+        reversed: Point { x: direction.is_rtl(), y: false },
+        padding: resolved_padding,
+    };
     let container_percentage_resolution_height =
         container_percentage_resolution_height.maybe_sub(resolved_content_box_inset.vertical_axis_sum());
     let parent_size = Size { width: Some(container_inner_width), height: container_percentage_resolution_height };
@@ -1197,6 +1275,7 @@ fn perform_final_layout_on_in_flow_children(
                 };
 
                 let mut location = block_ctx.place_floated_box(
+                    item.node_id.into(),
                     margin_box,
                     y_offset_for_float,
                     float_direction,
@@ -1215,6 +1294,12 @@ fn perform_final_layout_on_in_flow_children(
                 // for the output Layout
                 location.y += item_non_auto_margin.top;
                 location.x += item_non_auto_margin.left;
+
+                // A relatively positioned float is placed as a float first, then offset by its
+                // inset. The offset does not affect the placement of other content (CSS 2.2 9.4.3).
+                let inset_offset = resolve_relative_offset(item, parent_size, direction, tree);
+                location.x += inset_offset.x;
+                location.y += inset_offset.y;
 
                 // println!("BLOCK FLOATED BOX ({:?}) {:?}", item.node_id, float_direction);
                 // println!("w:{} h:{} x:{}, y:{}", margin_box.width, margin_box.height, location.x, location.y);
@@ -1237,21 +1322,19 @@ fn perform_final_layout_on_in_flow_children(
                 {
                     // TODO: Should the overflow of floated boxes count as "inflow_overflow_rect"
                     // or should it be counted separately?
-                    let contribution_location = if direction.is_rtl() {
-                        Point {
-                            x: container_outer_width - (location.x + item_layout.size.width) - resolved_border.right,
-                            y: location.y - resolved_border.top,
-                        }
-                    } else {
-                        Point { x: location.x - resolved_border.left, y: location.y - resolved_border.top }
+                    let contribution_location = Point {
+                        x: location.x - resolved_content_box_inset.left + resolved_padding.left,
+                        y: location.y - resolved_border.top,
                     };
                     inflow_overflow_rect = inflow_overflow_rect.union(compute_scrollable_overflow_contribution(
                         contribution_location,
                         item_layout.size,
-                        item_layout.scrollable_overflow_rect,
+                        item_layout.scrollable_overflow_rect.rect(),
+                        item.border,
                         item.overflow,
                         item.contain,
-                        is_scroll_container,
+                        &overflow_container,
+                        item_non_auto_margin.map(|value| value.min(0.0)),
                     ));
                 }
 
@@ -1486,23 +1569,7 @@ fn perform_final_layout_on_in_flow_children(
             };
 
             // Resolve item inset
-            let inset_percentage_basis =
-                Size { width: Some(container_inner_width), height: container_percentage_resolution_height };
-            let inset = item
-                .inset
-                .zip_size(inset_percentage_basis, |p, s| p.maybe_resolve(s, |val, basis| tree.calc(val, basis)));
-            let inset_offset = if item.position == Position::Relative {
-                Point {
-                    x: if direction.is_rtl() {
-                        inset.right.map(|x| -x).or(inset.left).unwrap_or(0.0)
-                    } else {
-                        inset.left.or(inset.right.map(|x| -x)).unwrap_or(0.0)
-                    },
-                    y: inset.top.or(inset.bottom.map(|x| -x)).unwrap_or(0.0),
-                }
-            } else {
-                Point::ZERO
-            };
+            let inset_offset = resolve_relative_offset(item, parent_size, direction, tree);
 
             // Set y_margin_offset (same bfc child)
             if item.is_in_same_bfc
@@ -1678,26 +1745,11 @@ fn perform_final_layout_on_in_flow_children(
             }
 
             // A block container's first baseline is the first baseline of its first in-flow child
-            // that has one.
-            //
-            // Scroll containers' baselines are determined from their content as if scrolled to the
-            // initial position, but are additionally clamped to their border box. A scroll container
-            // with no baseline synthesizes one from its border-box bottom edge.
-            // See https://github.com/w3c/csswg-drafts/issues/7660
+            // that has one. The child's relative offset does not affect it.
             if first_baseline.is_none() {
-                let child_baseline = if item.overflow.y.is_scroll_container() {
-                    Some(
-                        item_layout
-                            .baselines
-                            .first
-                            .unwrap_or(item_layout.size.height)
-                            .min(item_layout.size.height)
-                            .max(0.0),
-                    )
-                } else {
-                    item_layout.baselines.first
-                };
-                first_baseline = child_baseline.map(|baseline| location.y + baseline);
+                let child_baseline =
+                    child_first_baseline(item_layout.baselines.first, item_layout.size.height, item.overflow.y);
+                first_baseline = child_baseline.map(|baseline| location.y - inset_offset.y + baseline);
             }
 
             // Used auto margins include float-avoidance offsets, unlike the alignment margins above.
@@ -1734,21 +1786,19 @@ fn perform_final_layout_on_in_flow_children(
 
             #[cfg(feature = "content_size")]
             {
-                let contribution_location = if direction.is_rtl() {
-                    Point {
-                        x: container_outer_width - (location.x + final_size.width) - resolved_border.right,
-                        y: location.y - resolved_border.top,
-                    }
-                } else {
-                    Point { x: location.x - resolved_border.left, y: location.y - resolved_border.top }
+                let contribution_location = Point {
+                    x: location.x - resolved_content_box_inset.left + resolved_padding.left,
+                    y: location.y - resolved_border.top,
                 };
                 inflow_overflow_rect = inflow_overflow_rect.union(compute_scrollable_overflow_contribution(
                     contribution_location,
                     final_size,
-                    item_layout.scrollable_overflow_rect,
+                    item_layout.scrollable_overflow_rect.rect(),
+                    item.border,
                     item.overflow,
                     item.contain,
-                    is_scroll_container,
+                    &overflow_container,
+                    resolved_margin.map(|value| value.min(0.0)),
                 ));
             }
 

@@ -63,7 +63,8 @@ pub(in super::super) struct GridItem {
     pub align_self: AlignSelf,
     /// The item's justify_self property, or the parent's justify_items property if it is `None`
     pub justify_self: AlignSelf,
-    /// The items first baseline (horizontal)
+    /// The item's first baseline (horizontal), measured from the top of its border box. Set from the item's
+    /// intrinsic layout when resolving baseline alignment during track sizing, then from its final layout.
     pub baseline: Option<f32>,
     /// Shim for baseline alignment that acts like an extra top margin
     /// TODO: Support last baseline and vertical text baselines
@@ -98,7 +99,8 @@ pub(in super::super) struct GridItem {
     /// Cache for the max-content size
     pub max_content_contribution_cache: Size<Option<f32>>,
 
-    /// Final y position. Used to compute baseline alignment for the container.
+    /// Final y position, excluding any relative offset (which does not affect the container's baseline).
+    /// Used to compute baseline alignment for the container.
     pub y_position: f32,
     /// Final height. Used to compute baseline alignment for the container.
     pub height: f32,
@@ -718,15 +720,17 @@ impl GridItem {
             .maybe_add(box_sizing_adjustment)
             .get(axis)
             .map(|size| {
-                // A definite preferred size is clamped by the minimum and maximum sizes. For a compressible replaced
-                // element, an indefinite percentage maximum size is resolved against zero.
+                // A definite preferred size is clamped by the minimum and maximum sizes. For a replaced element (but
+                // not a form control), an indefinite percentage maximum size is resolved against zero. The spec also
+                // applies this to form controls (https://drafts.csswg.org/css-sizing-3/#min-content-zero) but no
+                // browser does (https://github.com/w3c/csswg-drafts/issues/6348).
                 let min_size = self.min_size.get(axis);
                 let max_size = self.max_size.get(axis);
                 if min_size.is_auto() && max_size.is_auto() {
                     return size;
                 }
                 let basis = grid_area_size.get(axis);
-                let max_size_basis = if self.is_compressible_replaced { basis.or(Some(0.0)) } else { basis };
+                let max_size_basis = if self.is_replaced { basis.or(Some(0.0)) } else { basis };
                 let adjustment = box_sizing_adjustment.get(axis);
                 let min_size = min_size.maybe_resolve(basis, |val, basis| tree.calc(val, basis));
                 let max_size = max_size.maybe_resolve(max_size_basis, |val, basis| tree.calc(val, basis));
@@ -785,13 +789,16 @@ impl GridItem {
                     // The content-based minimum size is additionally clamped by the sum of any fixed max track sizing
                     // functions of the tracks the item spans. Note that this clamp does not apply to explicitly specified
                     // preferred or minimum sizes, and that the argument to fit-content() does not clamp the content-based
-                    // minimum size in the same way as a fixed max track sizing function. The clamp is a stretch fit into
-                    // the limit, so it does not shrink the item below its padding + border.
+                    // minimum size in the same way as a fixed max track sizing function. The clamp is a stretch fit of
+                    // the item's margin box (including its baseline shim) into the limit, so it does not shrink the
+                    // item below its padding + border.
                     let limit =
                         self.spanned_fixed_track_limit(axis, axis_tracks, inner_node_size.get(axis), &|val, basis| {
                             tree.resolve_calc_value(val, basis)
                         });
-                    minimum_contribution.maybe_min(limit.map(|limit| f32_max(limit, padding_border_size.get(axis))))
+                    let margins = self.margins_axis_sums_with_baseline_shims(grid_area_size.width, tree);
+                    minimum_contribution
+                        .maybe_min(limit.map(|limit| f32_max(limit - margins.get(axis), padding_border_size.get(axis))))
                 } else {
                     0.0
                 }

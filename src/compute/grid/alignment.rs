@@ -1,7 +1,7 @@
 //! Alignment of tracks and final positioning of items
 use super::types::GridTrack;
 use crate::compute::common::alignment::{
-    apply_alignment_fallback, compute_alignment_offset, resolve_self_alignment_safety,
+    apply_alignment_fallback, child_first_baseline, compute_alignment_offset, resolve_self_alignment_safety,
 };
 use crate::geometry::{InBothAbsAxis, Line, Point, Rect, Size};
 use crate::style::{
@@ -13,7 +13,9 @@ use crate::util::sys::f32_max;
 use crate::util::{MaybeMath, MaybeResolve, ResolveOrZero};
 
 #[cfg(feature = "content_size")]
-use crate::compute::common::scrollable_overflow::compute_scrollable_overflow_contribution;
+use crate::compute::common::scrollable_overflow::{
+    compute_scrollable_overflow_contribution, ScrollableOverflowContainer,
+};
 use crate::compute::common::sizing_keyword::{resolve_sizing_keyword, SizingKeywordResolution};
 use crate::{AbsoluteAxis, BoxSizing, Direction, LayoutGridContainer};
 
@@ -95,11 +97,10 @@ pub(super) fn align_and_position_item(
     container_alignment_styles: InBothAbsAxis<AlignItems>,
     baseline_shim: f32,
     direction: Direction,
-    container_border_box_width: f32,
-    container_border: Rect<f32>,
-    #[cfg(feature = "content_size")] container_is_scroll_container: bool,
+    #[cfg(feature = "content_size")] padding_box_inset: Rect<f32>,
+    #[cfg(feature = "content_size")] overflow_container: &ScrollableOverflowContainer,
     bubbled_candidates: &mut OofCandidates,
-) -> (Rect<f32>, f32, f32) {
+) -> (Rect<f32>, f32, f32, Option<f32>) {
     let grid_area_size = Size { width: grid_area.right - grid_area.left, height: grid_area.bottom - grid_area.top };
 
     let style = tree.get_grid_child_style(node);
@@ -384,7 +385,7 @@ pub(super) fn align_and_position_item(
         0.0,
         direction,
     );
-    let (y, y_margin) = align_item_within_area(
+    let (y_without_relative_offset, y_margin) = align_item_within_area(
         Line { start: grid_area.top, end: grid_area.bottom },
         alignment_styles.vertical,
         height,
@@ -394,6 +395,10 @@ pub(super) fn align_and_position_item(
         baseline_shim,
         Direction::Ltr,
     );
+    // A relative offset moves the item, but does not affect the container's baseline (which is computed from the
+    // returned y position, without the offset)
+    let x = x + relative_offset(position, inset_horizontal, direction);
+    let y = y_without_relative_offset + relative_offset(position, inset_vertical, Direction::Ltr);
 
     let scrollbar_size = Size {
         width: if overflow.y == Overflow::Scroll { scrollbar_width } else { 0.0 },
@@ -427,26 +432,23 @@ pub(super) fn align_and_position_item(
 
     #[cfg(feature = "content_size")]
     let contribution = {
-        // Contributions to the container's scrollable overflow rect are measured from the
-        // container's padding-box origin (mirrored for RTL), matching the scrollable overflow region.
-        let contribution_location = if direction.is_rtl() {
-            Point { x: container_border_box_width - (x + width) - container_border.right, y: y - container_border.top }
-        } else {
-            Point { x: x - container_border.left, y: y - container_border.top }
-        };
+        let contribution_location = Point { x: x - padding_box_inset.left, y: y - padding_box_inset.top };
         compute_scrollable_overflow_contribution(
             contribution_location,
             Size { width, height },
-            layout_output.scrollable_overflow_rect,
+            layout_output.scrollable_overflow_rect.rect(),
+            border,
             overflow,
             contain,
-            container_is_scroll_container,
+            overflow_container,
+            resolved_margin,
         )
     };
     #[cfg(not(feature = "content_size"))]
     let contribution = Rect::ZERO;
 
-    (contribution, y, height)
+    let baseline = child_first_baseline(layout_output.baselines.first, height, overflow.y);
+    (contribution, y_without_relative_offset, height, baseline)
 }
 
 /// Align and size a grid item along a single axis
@@ -522,15 +524,18 @@ pub(super) fn align_item_within_area(
         alignment_based_offset
     };
 
-    let mut start = grid_area.start + offset_within_area;
-    if position == Position::Relative {
-        let relative_inset = if direction.is_rtl() {
-            inset.end.map(|pos| -pos).or(inset.start)
-        } else {
-            inset.start.or(inset.end.map(|pos| -pos))
-        };
-        start += relative_inset.unwrap_or(0.0);
-    }
+    (grid_area.start + offset_within_area, resolved_margin)
+}
 
-    (start, resolved_margin)
+/// The offset applied to an item in a single axis by its `inset` if it is `position: relative`
+fn relative_offset(position: Position, inset: Line<Option<f32>>, direction: Direction) -> f32 {
+    if position != Position::Relative {
+        return 0.0;
+    }
+    let relative_inset = if direction.is_rtl() {
+        inset.end.map(|pos| -pos).or(inset.start)
+    } else {
+        inset.start.or(inset.end.map(|pos| -pos))
+    };
+    relative_inset.unwrap_or(0.0)
 }
