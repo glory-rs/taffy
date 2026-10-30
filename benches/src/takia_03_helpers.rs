@@ -2,6 +2,7 @@ use rand::distr::uniform::SampleRange;
 use rand::Rng;
 use rand_chacha::ChaCha8Rng;
 use takia::style::Style as TakiaStyle;
+use takia_03::prelude::LayoutTree as _;
 
 use super::{BuildTree, BuildTreeExt, GenStyle};
 
@@ -136,8 +137,8 @@ fn convert_point<T, U, F: Fn(T) -> U>(input: takia::geometry::Point<T>, map: F) 
     takia_03::geometry::Point { x: map(input.x), y: map(input.y) }
 }
 
-fn convert_dimension(input: takia::style::Dimension) -> takia_03::style::Dimension {
-    let raw = input.into_raw();
+fn convert_dimension(input: impl Into<takia::style::Dimension>) -> takia_03::style::Dimension {
+    let raw = input.into().into_raw();
     match raw.tag() {
         takia::style::CompactLength::LENGTH_TAG => takia_03::style::Dimension::Points(raw.value()),
         takia::style::CompactLength::PERCENT_TAG => takia_03::style::Dimension::Percent(raw.value()),
@@ -199,5 +200,8 @@ fn convert_flex_wrap(input: takia::style::FlexWrap) -> takia_03::style::FlexWrap
         takia::style::FlexWrap::NoWrap => takia_03::style::FlexWrap::NoWrap,
         takia::style::FlexWrap::Wrap => takia_03::style::FlexWrap::Wrap,
         takia::style::FlexWrap::WrapReverse => takia_03::style::FlexWrap::WrapReverse,
+        takia::style::FlexWrap::Balance | takia::style::FlexWrap::BalanceReverse => {
+            panic!("Balanced flex wrapping is not supported by Taffy 0.3")
+        }
     }
 }
